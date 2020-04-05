@@ -18,7 +18,7 @@ import java.io.IOException;
  * PopulateTableActors
  */
 public class PopulateTableActors {
-    public static class JobMapper extends Mapper<LongWritable, Text, NullWritable, Put> {
+    public static class Job1Mapper extends Mapper<LongWritable, Text, NullWritable, Put> {
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] data = value.toString().split("\t");
@@ -30,9 +30,17 @@ public class PopulateTableActors {
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("birthYear"), Bytes.toBytes(data[2]));
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("deathYear"), Bytes.toBytes(data[3]));
 
-            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(String.valueOf(data[5].split(",").length)));
+            context.write(null, put);
+        }
+    }
 
-            // Fazer Top3
+    public static class Job2Mapper extends Mapper<LongWritable, Text, NullWritable, Put> {
+        @Override
+        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String[] data = value.toString().split("\t");
+
+            Put put = new Put(Bytes.toBytes(data[0]));
+            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(data[1]));
 
             context.write(null, put);
         }
@@ -44,22 +52,41 @@ public class PopulateTableActors {
         Configuration conf = HBaseConfiguration.create();
         conf.set("hbase.zookeeper.quorum", "zoo");
 
-        Job job = Job.getInstance(conf, "PopulateActors");
+        // Job 1 - Insert into "actors" info from "name.basics.tsv"
+        Job job1 = Job.getInstance(conf, "PopulateTableActors1");
 
-        job.setJarByClass(PopulateTableActors.class);
-        job.setMapperClass(PopulateTableActors.JobMapper.class);
+        job1.setJarByClass(PopulateTableActors.class);
+        job1.setMapperClass(PopulateTableActors.Job1Mapper.class);
 
-        job.setNumReduceTasks(0);
-        job.setOutputKeyClass(ImmutableBytesWritable.class);
-        job.setOutputValueClass(Put.class);
+        job1.setNumReduceTasks(0);
+        job1.setOutputKeyClass(ImmutableBytesWritable.class);
+        job1.setOutputValueClass(Put.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        TextInputFormat.setInputPaths(job, new Path("hdfs://namenode:9000/data/name.basics.tsv"));
+        job1.setInputFormatClass(TextInputFormat.class);
+        TextInputFormat.setInputPaths(job1, new Path("hdfs://namenode:9000/data/name.basics.tsv"));
 
-        job.setOutputFormatClass(TableOutputFormat.class);
-        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "actors");
+        job1.setOutputFormatClass(TableOutputFormat.class);
+        job1.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "actors");
 
-        job.waitForCompletion(true);
+        job1.waitForCompletion(true);
+
+        // Job 2 - Insert into "actors" info from "Actor2TotalMovies"
+        Job job2 = Job.getInstance(conf, "PopulateTableActors2");
+
+        job2.setJarByClass(PopulateTableActors.class);
+        job2.setMapperClass(PopulateTableActors.Job2Mapper.class);
+
+        job2.setNumReduceTasks(0);
+        job2.setOutputKeyClass(ImmutableBytesWritable.class);
+        job2.setOutputValueClass(Put.class);
+
+        job2.setInputFormatClass(TextInputFormat.class);
+        TextInputFormat.setInputPaths(job2, new Path("hdfs://namenode:9000/results/out-Actor2TotalMovies/part-r-00000"));
+
+        job2.setOutputFormatClass(TableOutputFormat.class);
+        job2.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "actors");
+
+        job2.waitForCompletion(true);
 
         System.out.println((System.currentTimeMillis() - time) + " ms");
     }
