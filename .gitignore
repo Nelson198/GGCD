@@ -1,6 +1,7 @@
 # IntelliJ
 .idea/
 .DS_Store
+TP1/TP1/target
 
 # IMDB files
 TP1/data/

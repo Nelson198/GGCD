@@ -48,7 +48,7 @@ public class HomepageActors {
 
         System.out.println("\nHomepage of actor \"" + idActor + "\" :\n");
 
-        // Coluna "info"
+        // Coluna "details"
         String name = Bytes.toString(res.getValue(Bytes.toBytes("details"), Bytes.toBytes("name")));
         System.out.println("Name: " + name);
 
