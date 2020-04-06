@@ -22,15 +22,30 @@ import java.util.Map;
 public class Actor2Top3Movies {
     /**
      * Left Mapper - Job 1
-     * title.principals.tsv
-     * (key, value) = (tconst, (L, nconst))
+     * title.basics.tsv
+     * (key, value) = (tconst, (L, originalTitle))
      */
     public static class Job1LeftMapper extends Mapper<LongWritable, Text, Text, Text> {
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] parts = value.toString().split("\t");
+            if (!parts[0].equals("tconst") && !parts[3].equals("originalTitle")) {
+                context.write(new Text(parts[0]), new Text("L:" + parts[3]));
+            }
+        }
+    }
+
+    /**
+     * Middle Mapper - Job 1
+     * title.principals.tsv
+     * (key, value) = (tconst, (M, nconst))
+     */
+    public static class Job1MiddleMapper extends Mapper<LongWritable, Text, Text, Text> {
+        @Override
+        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String[] parts = value.toString().split("\t");
             if (!parts[0].equals("tconst") && !parts[2].equals("nconst")) {
-                context.write(new Text(parts[0]), new Text("L:" + parts[2]));
+                context.write(new Text(parts[0]), new Text("M:" + parts[2]));
             }
         }
     }
@@ -52,24 +67,30 @@ public class Actor2Top3Movies {
 
     /**
      * Reducer - Job 1
-     * (key, value) = (nconst, (tconst, averageRating))
+     * (key, value) = (nconst, (originalTitle, averageRating))
      */
     public static class Job1Reducer extends Reducer<Text, Text, Text, Text> {
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            String idActor = "";
+            String idActor = "", titleMovie = "";
             float rating = 0;
             StringBuilder sb = new StringBuilder();
             for (Text t : values) {
                 String[] parts = t.toString().split(":");
-                if (parts[0].equals("L")) {
-                    idActor = parts[1];
-                } else if (parts[0].equals("R")) {
-                    rating = Float.parseFloat(parts[1]);
+                switch (parts[0]) {
+                    case "L":
+                        titleMovie = parts[1];
+                        break;
+                    case "M":
+                        idActor = parts[1];
+                        break;
+                    case "R":
+                        rating = Float.parseFloat(parts[1]);
+                        break;
                 }
             }
-            if (!idActor.equals("") && rating != 0) {
-                context.write(new Text(idActor), new Text(sb.append(key.toString()).append(",").append(rating).toString()));
+            if (!idActor.equals("") && !titleMovie.equals("") && rating != 0) {
+                context.write(new Text(idActor), new Text(sb.append(titleMovie).append(":").append(rating).toString()));
             }
         }
     }
@@ -87,15 +108,15 @@ public class Actor2Top3Movies {
 
     /**
      * Reducer - Job 2
-     * (key, value) = (nconst, [(tconst, averageRating)])
+     * (key, value) = (nconst, [(originalTitle, averageRating)])
      */
     public static class Job2Reducer extends Reducer<Text, Text, Text, Text> {
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            // Build map ( { idMovie : rating } )
+            // Build map ( { originalTitle : averageRating } )
             Map<String, Float> info = new HashMap<>();
             for (Text t : values) {
-                String[] parts = t.toString().split(",");
+                String[] parts = t.toString().split(":");
                 info.put(parts[0], Float.parseFloat(parts[1]));
             }
 
@@ -126,7 +147,8 @@ public class Actor2Top3Movies {
 
         job1.setJarByClass(Actor2Top3Movies.class);
 
-        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1LeftMapper.class);
+        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.basics.tsv"), TextInputFormat.class, Job1LeftMapper.class);
+        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1MiddleMapper.class);
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.ratings.tsv"), TextInputFormat.class, Job1RightMapper.class);
         job1.setReducerClass(Job1Reducer.class);
 
@@ -152,7 +174,7 @@ public class Actor2Top3Movies {
         TextInputFormat.setInputPaths(job2, "hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1/part-r-00000");
 
         job2.setOutputFormatClass(TextOutputFormat.class);
-        TextOutputFormat.setOutputPath(job2, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job2"));
+        TextOutputFormat.setOutputPath(job2, new Path("out-Actor2Top3Movies-Job2"));
 
         job2.waitForCompletion(true);
 

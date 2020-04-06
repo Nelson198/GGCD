@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -61,6 +62,13 @@ public class HomepageActors {
         // Coluna "movies"
         String total = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("total")));
         System.out.println("Number of movies: " + total);
+
+        System.out.println("Top 3 movies:");
+        int size = Integer.parseInt(res.getFamilyMap(Bytes.toBytes("movies")).lastEntry().getKey().toString().split("#")[1]);
+        for(int i = 1; i <= size; i++) {
+            String titleMovie = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + i)));
+            System.out.println("\t#" + i + " => " + titleMovie);
+        }
 
         /* Fechar conexões */
         table.close();

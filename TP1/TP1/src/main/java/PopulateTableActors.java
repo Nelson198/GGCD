@@ -46,6 +46,23 @@ public class PopulateTableActors {
         }
     }
 
+    public static class Job3Mapper extends Mapper<LongWritable, Text, NullWritable, Put> {
+        @Override
+        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String[] data = value.toString().split("\t");
+
+            Put put = new Put(Bytes.toBytes(data[0]));
+
+            String[] tuples = data[1].substring(1, data[1].length() - 1).split(", ");
+            for(int i = 0; i < tuples.length; i++) {
+                String titleMovie = tuples[i].substring(1, tuples[i].length() - 1).split(", ")[0];
+                put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + (i + 1)), Bytes.toBytes(titleMovie));
+            }
+
+            context.write(null, put);
+        }
+    }
+
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         long time = System.currentTimeMillis();
 
@@ -87,6 +104,26 @@ public class PopulateTableActors {
         job2.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "actors");
 
         job2.waitForCompletion(true);
+
+        System.out.println((System.currentTimeMillis() - time) + " ms");
+
+        // Job 3 - Insert into "actors" info from "Actor2Top3Movies"
+        Job job3 = Job.getInstance(conf, "PopulateTableActors3");
+
+        job3.setJarByClass(PopulateTableActors.class);
+        job3.setMapperClass(PopulateTableActors.Job3Mapper.class);
+
+        job3.setNumReduceTasks(0);
+        job3.setOutputKeyClass(ImmutableBytesWritable.class);
+        job3.setOutputValueClass(Put.class);
+
+        job3.setInputFormatClass(TextInputFormat.class);
+        TextInputFormat.setInputPaths(job3, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job2/part-r-00000"));
+
+        job3.setOutputFormatClass(TableOutputFormat.class);
+        job3.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "actors");
+
+        job3.waitForCompletion(true);
 
         System.out.println((System.currentTimeMillis() - time) + " ms");
     }
