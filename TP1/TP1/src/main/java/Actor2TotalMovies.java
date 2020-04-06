@@ -60,7 +60,7 @@ public class Actor2TotalMovies {
         job.setOutputValueClass(Text.class);
 
         job.setOutputFormatClass(TextOutputFormat.class);
-        TextOutputFormat.setOutputPath(job, new Path("out-Actor2TotalMovies"));
+        TextOutputFormat.setOutputPath(job, new Path("hdfs://namenode:9000/results/out-Actor2TotalMovies"));
 
         job.waitForCompletion(true);
 
