@@ -174,7 +174,7 @@ public class Actor2Top3Movies {
         TextInputFormat.setInputPaths(job2, "hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1/part-r-00000");
 
         job2.setOutputFormatClass(TextOutputFormat.class);
-        TextOutputFormat.setOutputPath(job2, new Path("out-Actor2Top3Movies-Job2"));
+        TextOutputFormat.setOutputPath(job2, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job2"));
 
         job2.waitForCompletion(true);
 
