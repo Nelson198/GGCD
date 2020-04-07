@@ -1,18 +1,21 @@
 # IntelliJ
 .idea/
 .DS_Store
-TP1/TP1/target
+target/
 
 # IMDB files
 TP1/data/
 
 # Latex
-TP1/Relatório/*.dvi
-TP1/Relatório/*.aux
-TP1/Relatório/*.fdb_latexmk
-TP1/Relatório/*.fls
-TP1/Relatório/*.lof
-TP1/Relatório/*.log
-TP1/Relatório/*.out
-TP1/Relatório/*.synctex.gz
-TP1/Relatório/*.toc
+Relatório/*.dvi
+Relatório/*.aux
+Relatório/*.fdb_latexmk
+Relatório/*.fls
+Relatório/*.lof
+Relatório/*.log
+Relatório/*.out
+Relatório/*.synctex.gz
+Relatório/*.toc
+
+# Outputs
+out-*/
