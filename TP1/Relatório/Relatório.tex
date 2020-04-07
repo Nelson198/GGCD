@@ -161,46 +161,46 @@
             \label{fig:4}
         \end{figure}
 
-		\subsubsection{Alternativa}
-		Uma possibilidade válida para realizar todo o processo associado à criação da tabela requerida seria utilizar a \textit{HBase shell} de forma direta.
-		Exibe-se de seguida as respetivas instruções:
-		\begin{figure}[H]
-			{
-				\color{teal}
-				\begin{verbatim}
-					   docker run -it 
+			\subsubsection{Alternativa}
+			Uma possibilidade válida para realizar todo o processo associado à criação da tabela requerida seria utilizar a \textit{HBase shell} de forma direta.
+			Exibe-se de seguida as respetivas instruções:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{verbatim}
+					   docker run -it
 					              --network docker-hbase_default
 					              --env-file docker-hbase/hbase-distributed-local.env
 					              bde2020/hbase-base hbase shell
-				\end{verbatim}
-			}
-			\caption{1ª Tarefa : Alternativa - Acesso à \textit{HBase shell}}
-            \label{fig:5}
-		\end{figure}
+					\end{verbatim}
+				}
+				\caption{1ª Tarefa : Alternativa - Acesso à \textit{HBase shell}}
+				\label{fig:5}
+			\end{figure}
 
-		\begin{figure}[H]
-			{
-				\color{teal}
-				\begin{Verbatim}[commandchars=\\\{\}]
-		  \textcolor{orange}{hbase(main):001:0>} create "movies", "details"
-				\end{Verbatim}
-			}
-			\caption{1ª Tarefa : Alternativa - Criação da tabela \textit{HBase "movies"}}
-            \label{fig:6}
-		\end{figure}
-		
-		Quanto à remoção da mesma tabela, à semelhança do procedimento tomado para a sua criação, adota-se a estratégia de usufruir explicitamente o mecanismo disponibilizado pela \textit{HBase shell}:
-		\begin{figure}[H]
-			{
-				\color{teal}
-				\begin{Verbatim}[commandchars=\\\{\}]
-			\textcolor{orange}{hbase(main):001:0>} disable "movies"
-			\textcolor{orange}{hbase(main):002:0>} drop "movies"
-				\end{Verbatim}
-			}
-			\caption{1ª Tarefa : Alternativa - Remoção da tabela \textit{HBase "movies"}}
-            \label{fig:7}
-		\end{figure}
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{Verbatim}[commandchars=\\\{\}]
+                  \textcolor{orange}{hbase(main):001:0>} create "movies", "details"
+					\end{Verbatim}
+				}
+				\caption{1ª Tarefa : Alternativa - Criação da tabela \textit{HBase "movies"}}
+				\label{fig:6}
+			\end{figure}
+			
+			Quanto à remoção da mesma tabela, à semelhança do procedimento tomado para a sua criação, adota-se a estratégia de usufruir explicitamente o mecanismo disponibilizado pela \textit{HBase shell}:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{Verbatim}[commandchars=\\\{\}]
+                        \textcolor{orange}{hbase(main):001:0>} disable "movies"
+                        \textcolor{orange}{hbase(main):002:0>} drop "movies"
+					\end{Verbatim}
+				}
+				\caption{1ª Tarefa : Alternativa - Remoção da tabela \textit{HBase "movies"}}
+				\label{fig:7}
+			\end{figure}
 
 		\subsection{Transferência do ficheiro para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task1-2}
 		De maneira a proceder ao carregamento do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS} existem duas possibilidades.
@@ -221,42 +221,42 @@
 
 		Após a exposição deste comando, destacam-se nos próximos subcapítulos as duas alternativas mencionadas acima.
 
-		\subsubsection{1ª Alternativa}
-		Nesta possibilidade evidencia-se o campo \texttt{source} que corresponde à diretoria da pasta que contém o ficheiro \textit{"title.basics.tsv"}.
-		Dito isto, apresenta-se agora a primeira alternativa:
-		\begin{figure}[H]
-			{
-				\color{teal}
-				\begin{verbatim}
+			\subsubsection{1ª Alternativa}
+			Nesta possibilidade evidencia-se o campo \texttt{source} que corresponde à diretoria da pasta que contém o ficheiro \textit{"title.basics.tsv"}.
+			Dito isto, apresenta-se agora a primeira alternativa:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{verbatim}
 					   docker run --network docker-hbase_default
-					              --env-file docker-hbase/hadoop.env 
+					              --env-file docker-hbase/hadoop.env
 					              --mount type=bind,source="/path/to/local/folder/data",target=/data
 					              bde2020/hadoop-base hdfs dfs -put /data/title.basics.tsv /data
-				\end{verbatim}
-			}
-			\caption{1ª Tarefa : 1ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
-            \label{fig:9}
-		\end{figure}
+					\end{verbatim}
+				}
+				\caption{1ª Tarefa : 1ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
+				\label{fig:9}
+			\end{figure}
 
-		\subsubsection{2ª Alternativa}
-		Esta opção corresponde ao modo interativo de execução disponibilizado pela instrução \textit{docker run}.
-		Uma vez feita esta observação, expõe-se a seguir a segunda alternativa:
-		\begin{figure}[H]
-			{
-				\color{teal}
-				\begin{verbatim}
-					   docker run -it 
+			\subsubsection{2ª Alternativa}
+			Esta opção corresponde ao modo interativo de execução disponibilizado pela instrução \textit{docker run}.
+			Uma vez feita esta observação, expõe-se a seguir a segunda alternativa:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{verbatim}
+					   docker run -it
 					              --network docker-hbase_default
 					              --env-file docker-hbase/hadoop.env
 					              bde2020/hadoop-base bash
 
 					   curl https://datasets.imdbws.com/title.basics.tsv.gz | gunzip |
 					   hdfs dfs -put - hdfs://namenode:9000/data/title.basics.tsv
-				\end{verbatim}
-			}
-			\caption{1ª Tarefa : 2ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
-            \label{fig:10}
-		\end{figure}
+					\end{verbatim}
+				}
+				\caption{1ª Tarefa : 2ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
+				\label{fig:10}
+			\end{figure}
 
 		\subsection{População da tabela \textit{HBase}} \label{subsec:Task1-3}
 		Quanto à população da tabela criada previamente foi igualmente implementada uma classe \textit{Java} para o efeito, designada por \textbf{\textit{PopulateTableMovies}}.
@@ -264,8 +264,16 @@
 		Nessa mesma etapa é processada cada linha do ficheiro de \textit{input} presente na plataforma \textit{Hadoop HDFS} e, quando o tratamento estiver concluído, o resultado obtido é colocado na tabela \textit{movies}.
 
 	\section{2ª Tarefa} \label{sec:Task2}
-		\subsection{}
-		\subsubsection{}
+		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task2-1}
+
+		\subsection{Transferência de ficheiros para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task2-2}
+
+		\subsection{População da tabela \textit{HBase}} \label{subsec:Task2-3}
+			\subsubsection{Nome, datas de nascimento e morte do ator} \label{sssec:Task2-3-1}
+
+			\subsubsection{Númeto total de filmes em que o ator participou} \label{sssec:Task2-3-2}
+
+			\subsubsection{Títulos dos 3 filmes com melhores classificações em que o ator participou} \label{sssec:Task2-3-3}
 }
 
 \chapter{Conclusão} \label{ch:Conclusion}
