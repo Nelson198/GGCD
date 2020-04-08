@@ -264,6 +264,17 @@
 		Nessa mesma etapa é processada cada linha do ficheiro de \textit{input} presente na plataforma \textit{Hadoop HDFS} e, quando o tratamento estiver concluído, o resultado obtido é colocado na tabela \textit{movies}.
 
 	\section{2ª Tarefa} \label{sec:Task2}
+	Tal como foi descrito no início do 2º capítulo deste documento, esta tarefa é composta por 3 alíneas distintas. Como tal é preciso tomar abordagens diferentes de forma a obter resultados corretos para cada uma das mesmas. 
+	Após uma leitura cuidadosa sobre o que é pedido em cada uma destas subtarefas, os elementos deste grupo notaram que iria ser necessário recolher 3 dos ficheiros que fazem parte do \textit{dataset IMDB} para extrair os resultados pretendidos.
+	Apresenta-se de seguida os 3 ficheiros escolhidos:
+	\begin{itemize}
+		\item \textit{"title.basics.tsv"}: informação detalhada dos filmes, nomeadamente o ano de começo, géneros, entre outros;
+		\item \textit{"title.principals.tsv"}: conjunto de dados relativos aos atores que integram um determinado filme;
+		\item \textit{"title.ratings.tsv"}: informação associada à classificação e votação dos filmes presentes na plataforma \textit{IMDB}.
+	\end{itemize}
+	
+	Tal como se pode observar na listagem acima, o formato utilizado para estes ficheiros é o formato \textit{.tsv}. A escolha desta extensão em detrimento de outras é exatamente a mesma que se encontra no início do subcapítulo relativo à \hyperref[sec:Task1]{1ª tarefa}.
+		
 		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task2-1}
 
 		\subsection{Transferência de ficheiros para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task2-2}
