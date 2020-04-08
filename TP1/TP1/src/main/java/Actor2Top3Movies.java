@@ -1,5 +1,12 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableReducer;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -12,6 +19,8 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +31,7 @@ import java.util.Map;
 public class Actor2Top3Movies {
     /**
      * Left Mapper - Job 1
-     * title.basics.tsv
+     * "title.basics.tsv"
      * (key, value) = (tconst, (L, originalTitle))
      */
     public static class Job1LeftMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -37,7 +46,7 @@ public class Actor2Top3Movies {
 
     /**
      * Middle Mapper - Job 1
-     * title.principals.tsv
+     * "title.principals.tsv"
      * (key, value) = (tconst, (M, nconst))
      */
     public static class Job1MiddleMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -52,7 +61,7 @@ public class Actor2Top3Movies {
 
     /**
      * Right Mapper - Job 1
-     * title.ratings.tsv
+     * "title.ratings.tsv"
      * (key, value) = (tconst, (R, averageRating))
      */
     public static class Job1RightMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -109,9 +118,10 @@ public class Actor2Top3Movies {
     /**
      * Reducer - Job 2
      * (key, value) = (nconst, [(originalTitle, averageRating)])
+     *
+     * Output redirected to "actors" table
      */
-    public static class Job2Reducer extends Reducer<Text, Text, Text, Text> {
-        @Override
+    public static class Job2Reducer extends TableReducer<Text, Text, ImmutableBytesWritable> {
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             // Build map ( { originalTitle : averageRating } )
             Map<String, Float> info = new HashMap<>();
@@ -127,24 +137,23 @@ public class Actor2Top3Movies {
                     .limit(3)
                     .forEachOrdered(x -> sorted.put(x.getKey(), x.getValue()));
 
-            // Output result
-            StringBuilder sb = new StringBuilder("[");
+            Put put = new Put(Bytes.toBytes(key.toString()));
+            int count = 1;
             for (Map.Entry<String, Float> pair : sorted.entrySet()) {
-                sb.append("(").append(pair.getKey()).append(", ").append(pair.getValue()).append("), ");
+                put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + count++), Bytes.toBytes(pair.getKey()));
             }
-            sb.append("]");
-            sb.delete(sb.length() - 3, sb.length() - 1);
 
-            context.write(key, new Text(sb.toString()));
+            context.write(new ImmutableBytesWritable(Bytes.toBytes(key.toString())), put);
         }
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException, URISyntaxException {
         long time = System.currentTimeMillis();
 
         // Job 1 - "Join"
         Job job1 = Job.getInstance(new Configuration(), "Actor2Top3Movies-Job1");
 
+        // Mapper
         job1.setJarByClass(Actor2Top3Movies.class);
 
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.basics.tsv"), TextInputFormat.class, Job1LeftMapper.class);
@@ -152,32 +161,51 @@ public class Actor2Top3Movies {
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.ratings.tsv"), TextInputFormat.class, Job1RightMapper.class);
         job1.setReducerClass(Job1Reducer.class);
 
+        // Reducer
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(Text.class);
 
         job1.setOutputFormatClass(SequenceFileOutputFormat.class);
         TextOutputFormat.setOutputPath(job1, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1"));
 
-        job1.waitForCompletion(true);
+        boolean ok = job1.waitForCompletion(true);
+        if (!ok) {
+            throw new IOException("Error with job \"Actor2Top3Movies-Job1\" !");
+        }
+
+        // Job 2 configuration
+        Configuration conf = HBaseConfiguration.create();
+        conf.set("hbase.zookeeper.quorum", "zoo");
 
         // Job 2 - "Group by"
-        Job job2 = Job.getInstance(new Configuration(), "Actor2Top3Movies-Job2");
+        FileSystem hdfs = FileSystem.get(new URI("hdfs://namenode:9000"), conf);
+        Job job2 = Job.getInstance(conf, "Actor2Top3Movies-Job2");
 
+        // Mapper
         job2.setJarByClass(Actor2Top3Movies.class);
         job2.setMapperClass(Job2Mapper.class);
-        job2.setReducerClass(Job2Reducer.class);
-
-        job2.setOutputKeyClass(Text.class);
-        job2.setOutputValueClass(Text.class);
 
         job2.setInputFormatClass(SequenceFileInputFormat.class);
         TextInputFormat.setInputPaths(job2, "hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1/part-r-00000");
 
-        job2.setOutputFormatClass(TextOutputFormat.class);
-        TextOutputFormat.setOutputPath(job2, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job2"));
+        // Reducer
+        job2.setMapOutputKeyClass(Text.class);
+        job2.setMapOutputValueClass(Text.class);
 
-        job2.waitForCompletion(true);
+        TableMapReduceUtil.initTableReducerJob("actors", Job2Reducer.class, job2);
+        job2.setNumReduceTasks(1);
+
+        ok = job2.waitForCompletion(true);
+        if (!ok) {
+            throw new IOException("Error with job \"Actor2Top3Movies-Job2\" !");
+        }
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
+
+        // Delete temporary MapReduce result from Hadoop HDFS
+        Path p = new Path("hdfs://namenode:9000/results");
+        if (hdfs.exists(p)) {
+            hdfs.delete(p, true);
+        }
     }
 }

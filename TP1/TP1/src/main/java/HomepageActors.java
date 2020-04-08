@@ -49,7 +49,7 @@ public class HomepageActors {
         System.out.println("\nHomepage of actor \"" + idActor + "\" :\n");
 
         // Coluna "details"
-        String name = Bytes.toString(res.getValue(Bytes.toBytes("details"), Bytes.toBytes("name")));
+        String name = Bytes.toString(res.getValue(Bytes.toBytes("details"), Bytes.toBytes("primaryName")));
         System.out.println("Name: " + name);
 
         String birth = Bytes.toString(res.getValue(Bytes.toBytes("details"), Bytes.toBytes("birthYear")));
@@ -59,15 +59,16 @@ public class HomepageActors {
         System.out.println("Death: " + death);
 
         // Coluna "movies"
-        String total = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("total")));
-        System.out.println("Number of movies: " + total);
+        int totalMovies = Bytes.toInt(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("total")));
+        System.out.println("Number of movies: " + totalMovies);
 
         System.out.println("Top 3 movies:");
-        int size = Integer.parseInt(res.getFamilyMap(Bytes.toBytes("movies")).lastEntry().getKey().toString().split("#")[1]);
-        for(int i = 1; i <= size; i++) {
-            String titleMovie = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + i)));
-            System.out.println("\t#" + i + " => " + titleMovie);
-        }
+        String movie1 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#1")));
+        System.out.println("\t#1 => " + movie1);
+        String movie2 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#2")));
+        System.out.println("\t#2 => " + movie2);
+        String movie3 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#3")));
+        System.out.println("\t#3 => " + movie3);
 
         /* Fechar conexões */
         table.close();

@@ -20,7 +20,7 @@ import java.io.IOException;
 public class Actor2TotalMovies {
     /**
      * Mapper - Job
-     * title.principals.tsv
+     * "title.principals.tsv"
      * (key, value) = (nconst, tconst)
      */
     public static class JobMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -35,7 +35,7 @@ public class Actor2TotalMovies {
 
     /**
      * Reducer - Job
-     * title.principals.tsv
+     * "title.principals.tsv"
      * (key, value) = (nconst, totalMovies)
      *
      * Output redirected to "actors" table
@@ -56,7 +56,7 @@ public class Actor2TotalMovies {
         Configuration conf = HBaseConfiguration.create();
         conf.set("hbase.zookeeper.quorum", "zoo");
 
-        // Job - "Total movies for each actor"
+        // Job - Total movies for each actor
         Job job = Job.getInstance(conf, "Actor2TotalMovies");
 
         // Mapper
@@ -75,7 +75,7 @@ public class Actor2TotalMovies {
 
         boolean ok = job.waitForCompletion(true);
         if (!ok) {
-            throw new IOException("Error with job \"Actor2TotalMovies\"");
+            throw new IOException("Error with job \"Actor2TotalMovies\" !");
         }
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
