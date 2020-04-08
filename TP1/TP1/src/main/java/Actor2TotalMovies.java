@@ -1,14 +1,16 @@
 import com.google.common.collect.Iterators;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableReducer;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
 
@@ -35,34 +37,46 @@ public class Actor2TotalMovies {
      * Reducer - Job
      * title.principals.tsv
      * (key, value) = (nconst, totalMovies)
+     *
+     * Output redirected to "actors" table
      */
-    public static class JobReducer extends Reducer<Text, Text, Text, IntWritable> {
-        @Override
+    public static class JobReducer extends TableReducer<Text, Text, ImmutableBytesWritable> {
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            context.write(key, new IntWritable(Iterators.size(values.iterator())));
+            Put put = new Put(Bytes.toBytes(key.toString()));
+            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(Iterators.size(values.iterator())));
+
+            context.write(new ImmutableBytesWritable(Bytes.toBytes(key.toString())), put);
         }
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         long time = System.currentTimeMillis();
 
-        // Job - "Total movies for each actor"
-        Job job = Job.getInstance(new Configuration(), "Actor2TotalMovies");
+        // Job configuration
+        Configuration conf = HBaseConfiguration.create();
+        conf.set("hbase.zookeeper.quorum", "zoo");
 
+        // Job - "Total movies for each actor"
+        Job job = Job.getInstance(conf, "Actor2TotalMovies");
+
+        // Mapper
         job.setJarByClass(Actor2TotalMovies.class);
         job.setMapperClass(JobMapper.class);
-        job.setReducerClass(JobReducer.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         TextInputFormat.setInputPaths(job, "hdfs://namenode:9000/data/title.principals.tsv");
 
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        // Reducer
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(Text.class);
 
-        job.setOutputFormatClass(TextOutputFormat.class);
-        TextOutputFormat.setOutputPath(job, new Path("hdfs://namenode:9000/results/out-Actor2TotalMovies"));
+        TableMapReduceUtil.initTableReducerJob("actors", JobReducer.class, job);
+        job.setNumReduceTasks(1);
 
-        job.waitForCompletion(true);
+        boolean ok = job.waitForCompletion(true);
+        if (!ok) {
+            throw new IOException("Error with job \"Actor2TotalMovies\"");
+        }
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
