@@ -73,7 +73,7 @@ public class PopulateTableActors {
         Job job1 = Job.getInstance(conf, "PopulateTableActors1");
 
         job1.setJarByClass(PopulateTableActors.class);
-        job1.setMapperClass(PopulateTableActors.Job1Mapper.class);
+        job1.setMapperClass(Job1Mapper.class);
 
         job1.setNumReduceTasks(0);
         job1.setOutputKeyClass(ImmutableBytesWritable.class);
@@ -91,7 +91,7 @@ public class PopulateTableActors {
         Job job2 = Job.getInstance(conf, "PopulateTableActors2");
 
         job2.setJarByClass(PopulateTableActors.class);
-        job2.setMapperClass(PopulateTableActors.Job2Mapper.class);
+        job2.setMapperClass(Job2Mapper.class);
 
         job2.setNumReduceTasks(0);
         job2.setOutputKeyClass(ImmutableBytesWritable.class);
@@ -111,7 +111,7 @@ public class PopulateTableActors {
         Job job3 = Job.getInstance(conf, "PopulateTableActors3");
 
         job3.setJarByClass(PopulateTableActors.class);
-        job3.setMapperClass(PopulateTableActors.Job3Mapper.class);
+        job3.setMapperClass(Job3Mapper.class);
 
         job3.setNumReduceTasks(0);
         job3.setOutputKeyClass(ImmutableBytesWritable.class);

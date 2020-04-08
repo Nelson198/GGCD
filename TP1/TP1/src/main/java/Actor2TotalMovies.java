@@ -50,8 +50,8 @@ public class Actor2TotalMovies {
         Job job = Job.getInstance(new Configuration(), "Actor2TotalMovies");
 
         job.setJarByClass(Actor2TotalMovies.class);
-        job.setMapperClass(Actor2TotalMovies.JobMapper.class);
-        job.setReducerClass(Actor2TotalMovies.JobReducer.class);
+        job.setMapperClass(JobMapper.class);
+        job.setReducerClass(JobReducer.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         TextInputFormat.setInputPaths(job, "hdfs://namenode:9000/data/title.principals.tsv");
