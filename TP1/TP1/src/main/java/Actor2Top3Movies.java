@@ -140,7 +140,7 @@ public class Actor2Top3Movies {
             Put put = new Put(Bytes.toBytes(key.toString()));
             int count = 1;
             for (Map.Entry<String, Float> pair : sorted.entrySet()) {
-                put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + count++), Bytes.toBytes(pair.getKey()));
+                put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + (count++)), Bytes.toBytes(pair.getKey()));
             }
 
             context.write(new ImmutableBytesWritable(Bytes.toBytes(key.toString())), put);

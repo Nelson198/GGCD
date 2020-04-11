@@ -15,9 +15,14 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import java.io.IOException;
 
 /**
- * PopulateTableMovies
+ * Movie2Details
  */
-public class PopulateTableMovies {
+public class Movie2Details {
+    /**
+     * Job - Mapper
+     * "title.basics.tsv"
+     * (key, value) = (null, Put)
+     */
     public static class MyMapper extends Mapper<LongWritable, Text, NullWritable, Put> {
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -42,12 +47,15 @@ public class PopulateTableMovies {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         long time = System.currentTimeMillis();
 
+        // Job configuration
         Configuration conf = HBaseConfiguration.create();
         conf.set("hbase.zookeeper.quorum", "zoo");
 
-        Job job = Job.getInstance(conf, "PopulateTableMovies");
+        // Job - Insert into "movies" table info from "title.basics.tsv"
+        Job job = Job.getInstance(conf, "Movie2Details");
 
-        job.setJarByClass(PopulateTableMovies.class);
+        // Mapper
+        job.setJarByClass(Movie2Details.class);
         job.setMapperClass(MyMapper.class);
 
         job.setNumReduceTasks(0);
@@ -60,7 +68,10 @@ public class PopulateTableMovies {
         job.setOutputFormatClass(TableOutputFormat.class);
         job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "movies");
 
-        job.waitForCompletion(true);
+        boolean ok = job.waitForCompletion(true);
+        if (!ok) {
+            throw new IOException("Error with job \"Movies2Details\" !");
+        }
 
         System.out.println((System.currentTimeMillis() - time) + " ms");
     }

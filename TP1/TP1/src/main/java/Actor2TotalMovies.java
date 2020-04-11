@@ -36,7 +36,7 @@ public class Actor2TotalMovies {
     /**
      * Reducer - Job
      * "title.principals.tsv"
-     * (key, value) = (nconst, totalMovies)
+     * (key, value) = (rowKey = nconst, Put)
      *
      * Output redirected to "actors" table
      */

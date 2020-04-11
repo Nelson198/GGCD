@@ -18,7 +18,7 @@ public class Actor2Details {
     /**
      * Mapper - Job
      * "name.basics.tsv"
-     * (key, value) = (nconst, [primaryName, birthYear, deathYear])
+     * (key, value) = (null, Put)
      */
     public static class JobMapper extends Mapper<LongWritable, Text, NullWritable, Put> {
         @Override
