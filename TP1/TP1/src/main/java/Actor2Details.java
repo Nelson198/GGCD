@@ -25,7 +25,7 @@ public class Actor2Details {
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] data = value.toString().split("\t");
 
-            if (data[0].equals("nconst")) return;
+            if (key.get() == 0) return;
 
             Put put = new Put(Bytes.toBytes(data[0]));
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("primaryName"), Bytes.toBytes(data[1]));

@@ -1,10 +1,14 @@
+import com.google.common.collect.Iterators;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableMapper;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
@@ -21,84 +25,83 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Actor2Top3Movies
+ * Actor2Movies
  */
-public class Actor2Top3Movies {
+public class Actor2Movies {
     /**
      * Left Mapper - Job 1
-     * "title.basics.tsv"
-     * (key, value) = (tconst, (L, originalTitle))
+     * "title.principals.tsv"
+     * Output : (key, value) = (tconst, (L, nconst))
      */
     public static class Job1LeftMapper extends Mapper<LongWritable, Text, Text, Text> {
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] parts = value.toString().split("\t");
-            if (!parts[0].equals("tconst") && !parts[3].equals("originalTitle")) {
-                context.write(new Text(parts[0]), new Text("L:" + parts[3]));
+            if (key.get() == 0) return;
+            if (parts[3].equals("actor") || parts[3].equals("actress")) {
+                context.write(new Text(parts[0]), new Text("L" + parts[2]));
             }
         }
     }
 
     /**
      * Middle Mapper - Job 1
-     * "title.principals.tsv"
-     * (key, value) = (tconst, (M, nconst))
+     * Access "movies" table to get all movies names
+     * Output : (key, value) = (tconst, (M, originalTitle))
      */
-    public static class Job1MiddleMapper extends Mapper<LongWritable, Text, Text, Text> {
-        @Override
-        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            String[] parts = value.toString().split("\t");
-            if (!parts[0].equals("tconst") && !parts[2].equals("nconst")) {
-                context.write(new Text(parts[0]), new Text("M:" + parts[2]));
-            }
+    public static class Job1MiddleMapper extends TableMapper<Text, Text> {
+        public void map(ImmutableBytesWritable key, Result values, Context context) throws IOException, InterruptedException {
+            String title = Bytes.toString(values.getValue(Bytes.toBytes("details"), Bytes.toBytes("originalTitle")));
+            context.write(new Text(key.toString()), new Text("M" + title));
         }
     }
 
     /**
      * Right Mapper - Job 1
      * "title.ratings.tsv"
-     * (key, value) = (tconst, (R, averageRating))
+     * Output : (key, value) = (tconst, (R, averageRating))
      */
     public static class Job1RightMapper extends Mapper<LongWritable, Text, Text, Text> {
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] parts = value.toString().split("\t");
-            if (!parts[0].equals("tconst") && !parts[1].equals("averageRating")) {
-                context.write(new Text(parts[0]), new Text("R:" + parts[1]));
-            }
+            if (key.get() == 0) return;
+            context.write(new Text(parts[0]), new Text("R" + parts[1]));
         }
     }
 
     /**
      * Reducer - Job 1
-     * (key, value) = (nconst, (originalTitle, averageRating))
+     * Input  : (key, value) = (tconst, [(L nconst)+, (R, averageRating){1}])
+     * Output : (key, value) = (nconst, (tconst, averageRating))
      */
     public static class Job1Reducer extends Reducer<Text, Text, Text, Text> {
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            String idActor = "", titleMovie = "";
+            List<String> idActors = new ArrayList<>();
+            String titleMovie = "";
             float rating = 0;
-            StringBuilder sb = new StringBuilder();
             for (Text t : values) {
-                String[] parts = t.toString().split(":");
-                switch (parts[0]) {
-                    case "L":
-                        titleMovie = parts[1];
+                String s = t.toString();
+                switch (s.charAt(0)) {
+                    case 'L':
+                        idActors.add(s.substring(1));
                         break;
-                    case "M":
-                        idActor = parts[1];
+                    case 'M':
+                        System.err.println("EU ESTOU AQUI - CASE M !");
+                        titleMovie = s.substring(1);
                         break;
-                    case "R":
-                        rating = Float.parseFloat(parts[1]);
+                    case 'R':
+                        rating = Float.parseFloat(s.substring(1));
                         break;
                 }
             }
-            if (!idActor.equals("") && !titleMovie.equals("") && rating != 0) {
+            for (String idActor : idActors) {
+                StringBuilder sb = new StringBuilder();
                 context.write(new Text(idActor), new Text(sb.append(titleMovie).append(":").append(rating).toString()));
             }
         }
@@ -106,7 +109,8 @@ public class Actor2Top3Movies {
 
     /**
      * Mapper - Job 2
-     * (key, value) = (key, value) <=> identity function
+     * Identity function
+     * Output : (key, value) = (nconst, (tconst, averageRating))
      */
     public static class Job2Mapper extends Mapper<Text, Text, Text, Text> {
         @Override
@@ -117,9 +121,8 @@ public class Actor2Top3Movies {
 
     /**
      * Reducer - Job 2
-     * (key, value) = (nconst, [(originalTitle, averageRating)])
-     *
-     * Output redirected to "actors" table
+     * Input  : (key, value) = (nconst, [(originalTitle, averageRating)])
+     * Output : (key, value) = (nconst, Put)
      */
     public static class Job2Reducer extends TableReducer<Text, Text, ImmutableBytesWritable> {
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -131,17 +134,22 @@ public class Actor2Top3Movies {
             }
 
             // Sort map by value in descending order
-            Map<String, Float> sorted = new LinkedHashMap<>();
-            info.entrySet().stream()
-                    .sorted(Map.Entry.<String, Float>comparingByValue().reversed())
+            Set<Map.Entry<String, Float>> top3 = info.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<String, Float>comparingByValue().reversed().thenComparing(x -> x.getKey()))
                     .limit(3)
-                    .forEachOrdered(x -> sorted.put(x.getKey(), x.getValue()));
+                    .collect(Collectors.toSet());
 
             Put put = new Put(Bytes.toBytes(key.toString()));
+
+            // Top 3 movies for each actor
             int count = 1;
-            for (Map.Entry<String, Float> pair : sorted.entrySet()) {
+            for (Map.Entry<String, Float> pair : top3) {
                 put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + (count++)), Bytes.toBytes(pair.getKey()));
             }
+
+            // Total movies for each actor
+            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(Iterators.size(values.iterator())));
 
             context.write(new ImmutableBytesWritable(Bytes.toBytes(key.toString())), put);
         }
@@ -150,14 +158,21 @@ public class Actor2Top3Movies {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException, URISyntaxException {
         long time = System.currentTimeMillis();
 
+        // Job 1 & 2 configuration
+        Configuration conf = HBaseConfiguration.create();
+        conf.set("hbase.zookeeper.quorum", "zoo");
+
         // Job 1 - "Join"
-        Job job1 = Job.getInstance(new Configuration(), "Actor2Top3Movies-Job1");
+        Job job1 = Job.getInstance(conf, "Actor2Movies-Job1");
 
-        // Mapper
-        job1.setJarByClass(Actor2Top3Movies.class);
+        // Mappers
+        job1.setJarByClass(Actor2Movies.class);
 
-        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.basics.tsv"), TextInputFormat.class, Job1LeftMapper.class);
-        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1MiddleMapper.class);
+        Scan s = new Scan();
+        s.addFamily(Bytes.toBytes("details"));
+        TableMapReduceUtil.initTableMapperJob("movies", s, Job1MiddleMapper.class, Text.class, Text.class, job1);
+
+        MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1LeftMapper.class);
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.ratings.tsv"), TextInputFormat.class, Job1RightMapper.class);
         job1.setReducerClass(Job1Reducer.class);
 
@@ -166,27 +181,23 @@ public class Actor2Top3Movies {
         job1.setOutputValueClass(Text.class);
 
         job1.setOutputFormatClass(SequenceFileOutputFormat.class);
-        TextOutputFormat.setOutputPath(job1, new Path("hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1"));
+        TextOutputFormat.setOutputPath(job1, new Path("hdfs://namenode:9000/results/out-Actor2Movies-Job1"));
 
         boolean ok = job1.waitForCompletion(true);
         if (!ok) {
-            throw new IOException("Error with job \"Actor2Top3Movies-Job1\" !");
+            throw new IOException("Error with job \"Actor2Movies-Job1\" !");
         }
-
-        // Job 2 configuration
-        Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", "zoo");
 
         // Job 2 - "Group by"
         FileSystem hdfs = FileSystem.get(new URI("hdfs://namenode:9000"), conf);
-        Job job2 = Job.getInstance(conf, "Actor2Top3Movies-Job2");
+        Job job2 = Job.getInstance(conf, "Actor2Movies-Job2");
 
         // Mapper
-        job2.setJarByClass(Actor2Top3Movies.class);
+        job2.setJarByClass(Actor2Movies.class);
         job2.setMapperClass(Job2Mapper.class);
 
         job2.setInputFormatClass(SequenceFileInputFormat.class);
-        TextInputFormat.setInputPaths(job2, "hdfs://namenode:9000/results/out-Actor2Top3Movies-Job1/part-r-00000");
+        TextInputFormat.setInputPaths(job2, "hdfs://namenode:9000/results/out-Actor2Movies-Job1/part-r-00000");
 
         // Reducer
         job2.setMapOutputKeyClass(Text.class);
@@ -197,7 +208,7 @@ public class Actor2Top3Movies {
 
         ok = job2.waitForCompletion(true);
         if (!ok) {
-            throw new IOException("Error with job \"Actor2Top3Movies-Job2\" !");
+            throw new IOException("Error with job \"Actor2Movies-Job2\" !");
         }
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");

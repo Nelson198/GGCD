@@ -28,7 +28,7 @@ public class Movie2Details {
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] data = value.toString().split("\t");
 
-            if (data[0].equals("tconst")) return;
+            if (key.get() == 0) return;
 
             Put put = new Put(Bytes.toBytes(data[0]));
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("titleType"), Bytes.toBytes(data[1]));
@@ -38,7 +38,11 @@ public class Movie2Details {
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("startYear"), Bytes.toBytes(data[5]));
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("endYear"), Bytes.toBytes(data[6]));
             put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("runtimeMinutes"), Bytes.toBytes(data[7]));
-            put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("genres"), Bytes.toBytes(data[8]));
+
+            int i = 1;
+            for (String s : data[8].split(",")) {
+                put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("genre" + (i++)), Bytes.toBytes(s));
+            }
 
             context.write(null, put);
         }
