@@ -100,6 +100,26 @@
 	\end{enumerate}
 	
 	Nas próximas secções são evidenciadas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
+	
+	\section{Arranque do \textit{cluster}} \label{sec:Cluster}
+		À semelhança do que foi realizado no guião nº 4 desta unidade curricular, os elementos deste grupo utilizaram a plataforma \textit{Hadoop deployment} com recurso à ferramenta \textit{docker-compose}. Este utensílio computacional encontra-se disponível em:
+		\begin{center}
+			\textit{\url{https://github.com/big-data-europe/docker-hbase}}
+		\end{center}
+		De forma a proceder ao arranque do \textit{cluster} contido neste repositório basta simplesmente invocar a seguinte instrução:
+		\begin{figure}[H]
+			{
+				\color{teal}
+				\begin{verbatim}
+				       docker-compose -f docker-hbase/docker-compose-distributed-local.yml up
+				\end{verbatim}
+			}
+			\caption{Arranque do \textit{cluster}}
+            \label{fig:1}
+		\end{figure}
+
+		Após a execução desta instrução, o \textit{cluster} que irá integrar este projeto encontra-se corretamente instanciado e, como tal, pode-se proceder à realização das tarefas mencionadas no topo desta página.
+	
 	\section{1ª Tarefa} \label{sec:Task1}
 		Após descarregar o ficheiro \textit{"title.basics.tsv.gz"} presente na hiperligação do capítulo anterior, os elementos que compõem este grupo optaram por converter o mesmo no formato \textit{.tsv}. 
 		A tomada desta decisão deve-se ao facto deste último permitir a partição de dados (isto é, potencia o \textbf{paralelismo}), ao contrário do formato \textit{.gz} (\textit{gzip}), e, ainda, ser mais rápido e eficiente no processo de descompressão quando comparado com o formato \textit{.bz2} (\textit{bzip2}).
@@ -111,8 +131,8 @@
                             gzip -d title.basics.tsv.gz
 				\end{verbatim}
 			}
-			\caption{1ª Tarefa - Conversão do ficheiro \textit{"title.basics.tsv.gz"} para o formato \textit{.gz} (\textit{gzip})}
-            \label{fig:1}
+			\caption{1ª Tarefa - Conversão do ficheiro \textit{"title.basics.tsv.gz"} para o formato \textit{.tsv}}
+            \label{fig:2}
 		\end{figure}
 
 		Antes de observar os passos relativos à realização desta tarefa, passos esses que se encontram explicitamente indicados nos próximos subcapítulos, é importante salientar que a execução das soluções elaboradas nas secções \hyperref[subsec:Task1-1]{2.1.1} e \hyperref[subsec:Task1-3]{2.1.3} são efetuadas com recurso a um ficheiro denominado por \textit{Dockerfile}.
@@ -127,7 +147,7 @@
 				\end{verbatim}
 			}
             \caption{1ª Tarefa - \textit{Dockerfile}}
-            \label{fig:2}
+            \label{fig:3}
         \end{figure}
         
         Após esta observação, indica-se ainda as opções adotadas para a execução do ficheiro \textit{Dockerfile} com o intuito de garantir uma execução válida das soluções implementadas:
@@ -141,7 +161,7 @@
 				\end{verbatim}
 			}
 			\caption{1ª Tarefa - \textit{Dockerfile} - Opções de execução}
-			\label{fig:3}
+			\label{fig:4}
         \end{figure}
 		
 		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task1-1}
@@ -158,7 +178,7 @@
             \centering
             \includegraphics[width=1.0\textwidth]{Imagens/Tabela Hbase.png}
             \caption{1ª Tarefa - Modelo da tabela \textit{HBase "movies"}}
-            \label{fig:4}
+            \label{fig:5}
         \end{figure}
 
 			\subsubsection{Alternativa}
@@ -175,7 +195,7 @@
 					\end{verbatim}
 				}
 				\caption{1ª Tarefa : Alternativa - Acesso à \textit{HBase shell}}
-				\label{fig:5}
+				\label{fig:6}
 			\end{figure}
 
 			\begin{figure}[H]
@@ -186,7 +206,7 @@
 					\end{Verbatim}
 				}
 				\caption{1ª Tarefa : Alternativa - Criação da tabela \textit{HBase "movies"}}
-				\label{fig:6}
+				\label{fig:7}
 			\end{figure}
 			
 			Quanto à remoção da mesma tabela, à semelhança do procedimento tomado para a sua criação, adota-se a estratégia de usufruir explicitamente o mecanismo disponibilizado pela \textit{HBase shell}:
@@ -199,7 +219,7 @@
 					\end{Verbatim}
 				}
 				\caption{1ª Tarefa : Alternativa - Remoção da tabela \textit{HBase "movies"}}
-				\label{fig:7}
+				\label{fig:8}
 			\end{figure}
 
 		\subsection{Transferência do ficheiro para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task1-2}
@@ -216,7 +236,7 @@
 				\end{verbatim}
 			}
 			\caption{1ª Tarefa - Criação da pasta \texttt{data} na plataforma \textit{Hadoop HDFS}}
-            \label{fig:8}
+            \label{fig:9}
 		\end{figure}
 
 		Após a exposição deste comando, destacam-se nos próximos subcapítulos as duas alternativas mencionadas acima.
@@ -235,7 +255,7 @@
 					\end{verbatim}
 				}
 				\caption{1ª Tarefa : 1ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
-				\label{fig:9}
+				\label{fig:10}
 			\end{figure}
 
 			\subsubsection{2ª Alternativa}
@@ -255,7 +275,7 @@
 					\end{verbatim}
 				}
 				\caption{1ª Tarefa : 2ª Alternativa - Transferência do ficheiro \textit{"title.basics.tsv"} para a plataforma \textit{Hadoop HDFS}}
-				\label{fig:10}
+				\label{fig:11}
 			\end{figure}
 
 		\subsection{População da tabela \textit{HBase}} \label{subsec:Task1-3}
