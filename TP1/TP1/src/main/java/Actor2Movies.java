@@ -25,7 +25,11 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -92,7 +96,6 @@ public class Actor2Movies {
                         idActors.add(s.substring(1));
                         break;
                     case 'M':
-                        System.err.println("EU ESTOU AQUI - CASE M !");
                         titleMovie = s.substring(1);
                         break;
                     case 'R':
@@ -174,11 +177,11 @@ public class Actor2Movies {
 
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1LeftMapper.class);
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.ratings.tsv"), TextInputFormat.class, Job1RightMapper.class);
-        job1.setReducerClass(Job1Reducer.class);
 
         // Reducer
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(Text.class);
+        job1.setReducerClass(Job1Reducer.class);
 
         job1.setOutputFormatClass(SequenceFileOutputFormat.class);
         TextOutputFormat.setOutputPath(job1, new Path("hdfs://namenode:9000/results/out-Actor2Movies-Job1"));
