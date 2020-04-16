@@ -41,7 +41,7 @@ public class Movie2Details {
 
             int i = 1;
             for (String s : data[8].split(",")) {
-                put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("genre" + (i++)), Bytes.toBytes(s));
+                put.addColumn(Bytes.toBytes("details"), Bytes.toBytes("genre#" + (i++)), Bytes.toBytes(s));
             }
 
             context.write(null, put);
