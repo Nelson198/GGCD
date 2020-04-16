@@ -106,6 +106,7 @@
 		\begin{center}
 			\textit{\url{https://github.com/big-data-europe/docker-hbase}}
 		\end{center}
+
 		De forma a proceder ao arranque do \textit{cluster} contido neste repositório basta simplesmente invocar a seguinte instrução:
 		\begin{figure}[H]
 			{
@@ -293,9 +294,10 @@
 
 	\section{2ª Tarefa} \label{sec:Task2}
 	Tal como foi descrito no início do 2º capítulo deste documento, esta tarefa é composta por 3 alíneas distintas. Como tal é preciso tomar abordagens diferentes de forma a obter resultados corretos para cada uma das mesmas. 
-	Após uma leitura cuidadosa sobre o que é pedido em cada uma destas subtarefas, os elementos deste grupo notaram que iria ser necessário recolher 3 dos ficheiros que fazem parte do \textit{dataset IMDB} para extrair os resultados pretendidos.
-	Apresenta-se de seguida os 3 ficheiros escolhidos:
+	Após uma leitura cuidadosa sobre o que é pedido em cada uma destas subtarefas, os elementos deste grupo notaram que iria ser necessário recolher 4 dos ficheiros que fazem parte do \textit{dataset IMDB} para extrair os resultados pretendidos.
+	Apresenta-se de seguida os 4 ficheiros escolhidos:
 	\begin{itemize}
+		\item \textit{"name.basics.tsv"}: conjunto de dados caraterísticos de um determinado ator, como por exemplo o seu nome, ano de nascimento, entre outros;
 		\item \textit{"title.basics.tsv"}: informação detalhada dos filmes, nomeadamente o ano de começo, géneros, entre outros;
 		\item \textit{"title.principals.tsv"}: conjunto de dados relativos aos atores que integram um determinado filme;
 		\item \textit{"title.ratings.tsv"}: informação associada à classificação e votação dos filmes presentes na plataforma \textit{IMDB}.
@@ -320,7 +322,7 @@
         \end{figure}
 
 			\subsubsection{Alternativa}
-			Uma possibilidade válida para realizar todo o processo associado à criação da tabela requerida seria utilizar a \textit{HBase shell} de forma direta. Por forma a aceder a este recurso basta invocar a instrução presente na figura \hyperref[fig:6]{nº 6}.
+			Uma possibilidade válida para realizar todo o processo associado à criação da tabela requerida seria utilizar a \textit{HBase shell} de forma direta. Por forma a aceder a este recurso basta invocar a instrução presente na \hyperref[fig:6]{figura nº 6}.
 			Exibe-se de seguida o comando alternativo para realizar a criação da tabela mencionada:
 
 			\begin{figure}[H]
@@ -348,6 +350,61 @@
 			\end{figure}
 
 		\subsection{Transferência de ficheiros para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task2-2}
+		Dado que o ficheiro \textit{"title.basics.tsv"} já foi transferido para a plataforma \textit{Hadoop HDFS} na tarefa anterior, resta apenas transferir os 3 ficheiros sobrantes presentes no início deste subcapítulo (isto é, \textit{"name.basics.tsv"}, \textit{"title.principals.tsv"} e \textit{"title.ratings.tsv"}).
+		Antes de mostrar as duas alternativas para proceder à transferência destes 3 ficheiros, é importante salientar que a pasta criada na 1ª tarefa (denominada por \textit{data}) é novamente utilizada para armazenar os mesmos. A instrução associada à criação da mesma pasta encontra-se disponível na \hyperref[fig:9]{figura nº 9}.
+
+			\subsubsection{1ª Alternativa}
+			Nesta possibilidade evidencia-se o campo \texttt{source} que corresponde à diretoria da pasta que contém o ficheiro de \textit{input} pretendido.
+			Dito isto, apresenta-se agora a primeira alternativa:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{verbatim}
+					   docker run --network docker-hbase_default
+					              --env-file docker-hbase/hadoop.env
+					              --mount type=bind,source="/path/to/local/folder/data",target=/data
+					              bde2020/hadoop-base hdfs dfs -put /data/name.basics.tsv /data
+								  
+					   docker run --network docker-hbase_default
+					              --env-file docker-hbase/hadoop.env
+					              --mount type=bind,source="/path/to/local/folder/data",target=/data
+					              bde2020/hadoop-base hdfs dfs -put /data/title.principals.tsv /data
+								  
+					   docker run --network docker-hbase_default
+					              --env-file docker-hbase/hadoop.env
+					              --mount type=bind,source="/path/to/local/folder/data",target=/data
+					              bde2020/hadoop-base hdfs dfs -put /data/title.ratings.tsv /data
+					\end{verbatim}
+				}
+				\caption{2ª Tarefa : 1ª Alternativa - Transferência dos 3 ficheiros de \textit{input} para a plataforma \textit{Hadoop HDFS}}
+				\label{fig:16}
+			\end{figure}
+
+			\subsubsection{2ª Alternativa}
+			Esta opção corresponde ao modo interativo de execução disponibilizado pela instrução \textit{docker run}.
+			Uma vez feita esta observação, expõe-se a seguir a segunda alternativa:
+			\begin{figure}[H]
+				{
+					\color{teal}
+					\begin{verbatim}
+					   docker run -it
+					              --network docker-hbase_default
+					              --env-file docker-hbase/hadoop.env
+					              bde2020/hadoop-base bash
+
+					   curl https://datasets.imdbws.com/name.basics.tsv.gz | gunzip |
+					   hdfs dfs -put - hdfs://namenode:9000/data/name.basics.tsv
+
+					   curl https://datasets.imdbws.com/title.principals.tsv.gz | gunzip |
+					   hdfs dfs -put - hdfs://namenode:9000/data/title.principals.tsv
+
+					   curl https://datasets.imdbws.com/title.ratings.tsv.gz | gunzip |
+					   hdfs dfs -put - hdfs://namenode:9000/data/title.ratings.tsv
+					\end{verbatim}
+				}
+				\caption{2ª Tarefa : 2ª Alternativa - Transferência dos 3 ficheiros de \textit{input} para a plataforma \textit{Hadoop HDFS}}
+				\label{fig:17}
+			\end{figure}
 
 		\subsection{População da tabela \textit{HBase}} \label{subsec:Task2-3}
 			\subsubsection{Nome, datas de nascimento e morte do ator} \label{sssec:Task2-3-1}
