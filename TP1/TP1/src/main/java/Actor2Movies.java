@@ -7,6 +7,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableMapper;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
@@ -80,15 +81,15 @@ public class Actor2Movies {
 
     /**
      * Reducer - Job 1
-     * Input  : (key, value) = (tconst, [(L nconst)+, (R, averageRating){1}])
-     * Output : (key, value) = (nconst, (tconst, averageRating))
+     * Input  : (key, value) = (tconst, [(L, nconst)+, (M, originalTitle){1}, (R, averageRating){1}])
+     * Output : (key, value) = (nconst, (originalTitle, averageRating))
      */
     public static class Job1Reducer extends Reducer<Text, Text, Text, Text> {
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             List<String> idActors = new ArrayList<>();
-            String titleMovie = "";
-            float rating = 0;
+            String originalTitle = "";
+            float averageRating = 0;
             for (Text t : values) {
                 String s = t.toString();
                 switch (s.charAt(0)) {
@@ -96,16 +97,18 @@ public class Actor2Movies {
                         idActors.add(s.substring(1));
                         break;
                     case 'M':
-                        titleMovie = s.substring(1);
+                        // System.out.println(originalTitle) ✅
+                        originalTitle = s.substring(1);
                         break;
                     case 'R':
-                        rating = Float.parseFloat(s.substring(1));
+                        averageRating = Float.parseFloat(s.substring(1));
                         break;
                 }
             }
             for (String idActor : idActors) {
-                StringBuilder sb = new StringBuilder();
-                context.write(new Text(idActor), new Text(sb.append(titleMovie).append(":").append(rating).toString()));
+                // originalTitle é uma string vazia !!! ❌
+                System.out.println(idActor + " --> ( " + originalTitle + ", " + averageRating + " )");
+                context.write(new Text(idActor), new Text(originalTitle + ":" + averageRating));
             }
         }
     }
@@ -161,20 +164,22 @@ public class Actor2Movies {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException, URISyntaxException {
         long time = System.currentTimeMillis();
 
-        // Job 1 & 2 configuration
-        Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", "zoo");
+        // Job 1 configuration
+        Scan s = new Scan();
+        s.addFamily(Bytes.toBytes("details"));
+
+        Configuration conf1 = HBaseConfiguration.create();
+        conf1.set("hbase.zookeeper.quorum", "zoo");
+        conf1.set(TableInputFormat.INPUT_TABLE, "movies");
+        conf1.set(TableInputFormat.SCAN, TableMapReduceUtil.convertScanToString(s));
 
         // Job 1 - "Join"
-        Job job1 = Job.getInstance(conf, "Actor2Movies-Job1");
+        Job job1 = Job.getInstance(conf1, "Actor2Movies-Job1");
 
         // Mappers
         job1.setJarByClass(Actor2Movies.class);
 
-        Scan s = new Scan();
-        s.addFamily(Bytes.toBytes("details"));
-        TableMapReduceUtil.initTableMapperJob("movies", s, Job1MiddleMapper.class, Text.class, Text.class, job1);
-
+        MultipleInputs.addInputPath(job1, new Path("HT_movies"), TableInputFormat.class, Job1MiddleMapper.class);
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.principals.tsv"), TextInputFormat.class, Job1LeftMapper.class);
         MultipleInputs.addInputPath(job1, new Path("hdfs://namenode:9000/data/title.ratings.tsv"), TextInputFormat.class, Job1RightMapper.class);
 
@@ -191,9 +196,13 @@ public class Actor2Movies {
             throw new IOException("Error with job \"Actor2Movies-Job1\" !");
         }
 
+        // Job 2 configuration
+        Configuration conf2 = HBaseConfiguration.create();
+        conf2.set("hbase.zookeeper.quorum", "zoo");
+
         // Job 2 - "Group by"
-        FileSystem hdfs = FileSystem.get(new URI("hdfs://namenode:9000"), conf);
-        Job job2 = Job.getInstance(conf, "Actor2Movies-Job2");
+        FileSystem hdfs = FileSystem.get(new URI("hdfs://namenode:9000"), conf2);
+        Job job2 = Job.getInstance(conf2, "Actor2Movies-Job2");
 
         // Mapper
         job2.setJarByClass(Actor2Movies.class);
