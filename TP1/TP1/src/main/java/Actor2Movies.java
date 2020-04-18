@@ -1,4 +1,3 @@
-import com.google.common.collect.Iterators;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -55,13 +53,13 @@ public class Actor2Movies {
 
     /**
      * Middle Mapper - Job 1
-     * Access "movies" table to get all movies names
+     * Access "movies" table to get all movies' names
      * Output : (key, value) = (tconst, (M, originalTitle))
      */
     public static class Job1MiddleMapper extends TableMapper<Text, Text> {
         public void map(ImmutableBytesWritable key, Result values, Context context) throws IOException, InterruptedException {
             String title = Bytes.toString(values.getValue(Bytes.toBytes("details"), Bytes.toBytes("originalTitle")));
-            context.write(new Text(key.toString()), new Text("M" + title));
+            context.write(new Text(Bytes.toString(key.get())), new Text("M" + title));
         }
     }
 
@@ -97,7 +95,6 @@ public class Actor2Movies {
                         idActors.add(s.substring(1));
                         break;
                     case 'M':
-                        // System.out.println(originalTitle) ✅
                         originalTitle = s.substring(1);
                         break;
                     case 'R':
@@ -105,10 +102,10 @@ public class Actor2Movies {
                         break;
                 }
             }
-            for (String idActor : idActors) {
-                // originalTitle é uma string vazia !!! ❌
-                System.out.println(idActor + " --> ( " + originalTitle + ", " + averageRating + " )");
-                context.write(new Text(idActor), new Text(originalTitle + ":" + averageRating));
+            if (!originalTitle.equals("") && averageRating != 0) {
+                for (String idActor : idActors) {
+                    context.write(new Text(idActor), new Text(originalTitle + "€" + averageRating));
+                }
             }
         }
     }
@@ -116,7 +113,7 @@ public class Actor2Movies {
     /**
      * Mapper - Job 2
      * Identity function
-     * Output : (key, value) = (nconst, (tconst, averageRating))
+     * Output : (key, value) = (nconst, (originalTitle, averageRating))
      */
     public static class Job2Mapper extends Mapper<Text, Text, Text, Text> {
         @Override
@@ -135,16 +132,16 @@ public class Actor2Movies {
             // Build map ( { originalTitle : averageRating } )
             Map<String, Float> info = new HashMap<>();
             for (Text t : values) {
-                String[] parts = t.toString().split(":");
+                String[] parts = t.toString().split("€");
                 info.put(parts[0], Float.parseFloat(parts[1]));
             }
 
             // Sort map by value in descending order
-            Set<Map.Entry<String, Float>> top3 = info.entrySet()
+            List<Map.Entry<String, Float>> top3 = info.entrySet()
                     .stream()
                     .sorted(Map.Entry.<String, Float>comparingByValue().reversed().thenComparing(x -> x.getKey()))
                     .limit(3)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
 
             Put put = new Put(Bytes.toBytes(key.toString()));
 
@@ -155,7 +152,7 @@ public class Actor2Movies {
             }
 
             // Total movies for each actor
-            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(Iterators.size(values.iterator())));
+            put.addColumn(Bytes.toBytes("movies"), Bytes.toBytes("total"), Bytes.toBytes(info.size()));
 
             context.write(new ImmutableBytesWritable(Bytes.toBytes(key.toString())), put);
         }

@@ -63,12 +63,12 @@ public class HomepageActors {
         System.out.println("Number of movies: " + totalMovies);
 
         System.out.println("Top 3 movies:");
-        String movie1 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#1")));
-        System.out.println("\t#1 => " + movie1);
-        String movie2 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#2")));
-        System.out.println("\t#2 => " + movie2);
-        String movie3 = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#3")));
-        System.out.println("\t#3 => " + movie3);
+        for (int i = 1; i <= 3; i++) {
+            String movie = Bytes.toString(res.getValue(Bytes.toBytes("movies"), Bytes.toBytes("top3#" + i)));
+            if (movie != null) {
+                System.out.println("\t#" + i + " => " + movie);
+            }
+        }
 
         /* Fechar conexões */
         table.close();
