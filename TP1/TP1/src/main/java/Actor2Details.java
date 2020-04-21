@@ -17,8 +17,8 @@ import java.io.IOException;
 public class Actor2Details {
     /**
      * Mapper - Job
-     * "name.basics.tsv"
-     * (key, value) = (null, Put)
+     * Input  : "name.basics.tsv"
+     * Output : (key, value) = (null, Put)
      */
     public static class JobMapper extends Mapper<LongWritable, Text, NullWritable, Put> {
         @Override

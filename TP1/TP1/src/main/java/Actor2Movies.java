@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class Actor2Movies {
     /**
      * Left Mapper - Job 1
-     * "title.principals.tsv"
+     * Input  : "title.principals.tsv"
      * Output : (key, value) = (tconst, (L, nconst))
      */
     public static class Job1LeftMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -53,7 +53,7 @@ public class Actor2Movies {
 
     /**
      * Middle Mapper - Job 1
-     * Access "movies" table to get all movies' names
+     * Input  : HBase Table "movies"
      * Output : (key, value) = (tconst, (M, originalTitle))
      */
     public static class Job1MiddleMapper extends TableMapper<Text, Text> {
@@ -65,7 +65,7 @@ public class Actor2Movies {
 
     /**
      * Right Mapper - Job 1
-     * "title.ratings.tsv"
+     * Input  : "title.ratings.tsv"
      * Output : (key, value) = (tconst, (R, averageRating))
      */
     public static class Job1RightMapper extends Mapper<LongWritable, Text, Text, Text> {
@@ -113,7 +113,8 @@ public class Actor2Movies {
     /**
      * Mapper - Job 2
      * Identity function
-     * Output : (key, value) = (nconst, (originalTitle, averageRating))
+     * Input  : (key, value) = (nconst, (originalTitle, averageRating))
+     * Output : (key, value) = (nconst, [(originalTitle, averageRating)])
      */
     public static class Job2Mapper extends Mapper<Text, Text, Text, Text> {
         @Override

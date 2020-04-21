@@ -20,8 +20,8 @@ import java.io.IOException;
 public class Movie2Details {
     /**
      * Job - Mapper
-     * "title.basics.tsv"
-     * (key, value) = (null, Put)
+     * Input  : "title.basics.tsv"
+     * Output : (key, value) = (null, Put)
      */
     public static class MyMapper extends Mapper<LongWritable, Text, NullWritable, Put> {
         @Override
