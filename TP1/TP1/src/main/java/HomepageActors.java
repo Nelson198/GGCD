@@ -56,6 +56,9 @@ public class HomepageActors {
         System.out.println("Birth: " + birth);
 
         String death = Bytes.toString(res.getValue(Bytes.toBytes("details"), Bytes.toBytes("deathYear")));
+        if (death.equals("\\N")) {
+            death = "----";
+        }
         System.out.println("Death: " + death);
 
         // Coluna "movies"

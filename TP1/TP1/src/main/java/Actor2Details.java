@@ -14,6 +14,9 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
 import java.io.IOException;
 
+/**
+ * Actor2Details
+ */
 public class Actor2Details {
     /**
      * Mapper - Job
@@ -65,6 +68,6 @@ public class Actor2Details {
             throw new IOException("Error with job \"Actor2Details\" !");
         }
 
-        System.out.println((System.currentTimeMillis() - time) + " ms");
+        System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
 }

@@ -5,6 +5,7 @@
 .project
 .DS_Store
 target/
+dependency-reduced-pom.xml
 
 # IMDB files
 TP1/data/

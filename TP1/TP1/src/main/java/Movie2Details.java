@@ -77,6 +77,6 @@ public class Movie2Details {
             throw new IOException("Error with job \"Movies2Details\" !");
         }
 
-        System.out.println((System.currentTimeMillis() - time) + " ms");
+        System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
 }

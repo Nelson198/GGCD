@@ -291,7 +291,6 @@
             \label{fig:12}
         \end{figure}
 
-
 	\section{2ª Tarefa} \label{sec:Task2}
 	Tal como foi descrito no início do 2º capítulo deste documento, esta tarefa é composta por 3 alíneas distintas. Como tal é preciso tomar abordagens diferentes de forma a obter resultados corretos para cada uma das mesmas. 
 	Após uma leitura cuidadosa sobre o que é pedido em cada uma destas subtarefas, os elementos deste grupo notaram que iria ser necessário recolher 4 dos ficheiros que fazem parte do \textit{dataset IMDB} para extrair os resultados pretendidos.
@@ -305,7 +304,7 @@
 	
 	Tal como se pode observar na listagem acima, o formato utilizado para estes ficheiros é o formato \textit{.tsv}. A escolha desta extensão em detrimento de outras é exatamente a mesma que se encontra no início do subcapítulo relativo à \hyperref[sec:Task1]{1ª tarefa}.
 	
-	À semelhança do que foi indicado nesse mesmo subcapítulo, a execução das soluções desenvolvidas nas secções \hyperref[subsec:Task2-1]{2.3.1} e \hyperref[subsec:Task2-3]{2.3.3} são realizadas com o auxílio do mesmo ficheiro \textit{Dockerfile} com as mesmas opções de execução.
+	À semelhança do que foi indicado nesse mesmo subcapítulo, a execução das soluções desenvolvidas nas secções \hyperref[subsec:Task2-1]{2.3.1}, \hyperref[subsec:Task2-3]{2.3.3} e \hyperref[subsec:Task2-4]{2.3.4} são realizadas com o auxílio do mesmo ficheiro \textit{Dockerfile} com as mesmas opções de execução.
 		
 		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task2-1}
 		De maneira a criar a tabela \textit{HBase} associada a esta tarefa, foi implementada uma classe \textit{Java}, \textbf{\textit{CreateTableActors}}, que, após conectar-se com a base de dados não relacional \textit{HBase}, trata da sua criação e configuração.
@@ -445,6 +444,17 @@
 				\caption{2ª Tarefa - \textit{Actor2Movies} - 2º Esquema do paradigma \textit{MapReduce}}
 				\label{fig:20}
 			\end{figure}
+
+		\subsection{Consulta da tabela \textit{HBase}} \label{subsec:Task2-4}
+		Tal como é requirido na segunda tarefa deste trabalho prático, após computar todos os dados pertinentes associados a um determinado ator que se encontra presente na base de dados \textit{IMDB}, foi implementada uma classe \textit{Java}, \textit{\textbf{HomepageActors}}, que permite consultar detalhadamente toda a informação respetiva.
+		Desta forma, para cada ator, é apresentado o seu nome, as suas datas de nascimento e, eventualmente, de óbito, o número total de filmes em que participou e, ainda, os títulos dos 3 filmes com melhores classificações.
+		
+		\begin{figure}[H]
+            \centering
+            \includegraphics[width=0.55\textwidth]{Imagens/2ª Tarefa - Homepage.png}
+            \caption{2ª Tarefa - Consulta de dados de um determinado ator na tabela \textit{HBase "actors"}}
+            \label{fig:21}
+        \end{figure}
 }
 
 \chapter{Conclusão} \label{ch:Conclusion}
