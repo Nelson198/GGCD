@@ -72,8 +72,8 @@
 
 \chapter{Introdução} \label{ch:Introduction}
 \large {
-	Na primeira parte deste trabalho prático é requerida a concretização e avaliação experimental de tarefas de armazenamento e processamento de dados utilizando as ferramentas computacionais \textit{Hadoop HDFS}, \textit{HBase} e, ainda, o paradigma \textit{MapReduce}. 
-	Por forma a realizar estas tarefas, os dados a utilizar para tal efeito correspondem ao conjunto de dados público do \textit{IMDB}, que se encontram disponíveis em: 
+	Neste trabalho prático é requerida a concretização e avaliação experimental de tarefas de armazenamento e processamento de dados através do uso das ferramentas computacionais \textit{Hadoop HDFS}, \textit{HBase} e \textit{Hadoop MapReduce}.
+	Por forma a realizar estas tarefas, são utilizados os dados públicos do \textit{IMDB}, que se encontram disponíveis em: 
 	\begin{center}
 		\textit{\url{https://www.imdb.com/interfaces/}}
 	\end{center}
@@ -87,7 +87,7 @@
 
 \chapter{Implementação} \label{ch:Implementation}
 \large {
-	Tal como foi enunciado anteriormente, neste projeto é globalmente solicitada a elaboração de duas tarefas. Apresentam-se de seguida as mesmas:
+	Para a realização com sucesso deste trabalho, é solicitada a elaboração de duas tarefas, sendo elas:
 	\begin{enumerate}
 		\item Carregar os dados do ficheiro \textit{"title.basics.tsv.gz"} para uma tabela \textit{HBase};
 		\item Utilizando a tabela \textit{HBase} do ponto acima e os restantes ficheiros presentes no \textit{dataset} mencionado no capítulo anterior, computar os dados necessários para apresentar para cada ator uma página. Esta última deve conter:
@@ -119,11 +119,11 @@
             \label{fig:1}
 		\end{figure}
 
-		Após a execução desta instrução, o \textit{cluster} que irá integrar este projeto encontra-se corretamente instanciado e, como tal, pode-se proceder à realização das tarefas mencionadas no topo desta página.
-	
+		Após a execução desta instrução, o \textit{cluster} que será utilizado neste projeto encontra-se corretamente instanciado e, como tal, pode-se proceder à realização das tarefas mencionadas anteriormente.
+
 	\section{1ª Tarefa} \label{sec:Task1}
-		Após descarregar o ficheiro \textit{"title.basics.tsv.gz"} presente na hiperligação do capítulo anterior, os elementos que compõem este grupo optaram por converter o mesmo no formato \textit{.tsv}. 
-		A tomada desta decisão deve-se ao facto deste último permitir a partição de dados (isto é, potencia o \textbf{paralelismo}), ao contrário do formato \textit{.gz} (\textit{gzip}), e, ainda, ser mais rápido e eficiente no processo de descompressão quando comparado com o formato \textit{.bz2} (\textit{bzip2}).
+		Após descarregar o ficheiro \textit{"title.basics.tsv.gz"} presente na hiperligação do capítulo anterior, os elementos que compõem este grupo optaram por descompactá-lo, de forma a obter o mesmo no formato \textit{.tsv}.
+		A tomada desta decisão deve-se ao facto de este último permitir a partição de dados (isto é, potencia o \textbf{paralelismo}), ao contrário do formato \textit{.gz} (\textit{gzip}). Para além disso, não é necessário descompactar aquando da sua utilização. Para além destes dois formatos, havia ainda a hipótese de utilizar o formato \textit{.bz2} (\textit{bzip2}), que, apesar de ser mais rápido e eficiente que o \textit{.gz}, não se compara com a ausência de descompressão do \textit{.tsv}.
 		Mostra-se na seguinte figura a instrução associada à descompressão do ficheiro \textit{"title.basics.tsv.gz"}:
 		\begin{figure}[H]
 			{
@@ -167,9 +167,9 @@
 		
 		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task1-1}
 		De forma a criar a tabela \textit{HBase} intrínseca a esta tarefa, foi implementada uma classe \textit{Java}, \textbf{\textit{CreateTableMovies}}, que, após conectar-se com a base de dados não relacional \textit{HBase}, trata da sua criação e configuração.
-		Durante esse processo, é produzida apenas uma família de colunas, intitulada por \textbf{\textit{details}}, onde será armazenada toda a informação associada aos dados do ficheiro \textit{"title.basics.tsv.gz"}.
+		Durante esse processo, é produzida apenas uma família de colunas, intitulada \textbf{\textit{details}}, onde será armazenada toda a informação associada aos dados do ficheiro \textit{"title.basics.tsv.gz"}.
 
-		De notar também que atribuiu-se o nome \textbf{\textit{movies}} à tabela gerada, tal como o nome da classe \textit{Java} transparece.
+		De notar também que se atribuiu o nome \textbf{\textit{movies}} à tabela gerada, tal como o nome da classe \textit{Java} transparece.
 
 		Foi também criada uma classe \textit{Java} adicional, \textbf{\textit{DeleteTableMovies}}, que trata de eliminar a tabela descrita anteriormente.
 		Esta foi desenvolvida com o intuito de remover a tabela em causa caso esta deixe se ser necessária no futuro.
@@ -184,7 +184,7 @@
 
 			\subsubsection{Alternativa}
 			Uma possibilidade válida para realizar todo o processo associado à criação da tabela requerida seria utilizar a \textit{HBase shell} de forma direta.
-			Exibe-se de seguida as respetivas instruções:
+			Exibem-se de seguida as respetivas instruções:
 			\begin{figure}[H]
 				{
 					\color{teal}
@@ -349,7 +349,7 @@
 			\end{figure}
 
 		\subsection{Transferência de ficheiros para a plataforma \textit{Hadoop HDFS}} \label{subsec:Task2-2}
-		Dado que o ficheiro \textit{"title.basics.tsv"} já foi transferido para a plataforma \textit{Hadoop HDFS} na tarefa anterior, resta apenas transferir os 3 ficheiros sobrantes presentes no início deste subcapítulo (isto é, \textit{"name.basics.tsv"}, \textit{"title.principals.tsv"} e \textit{"title.ratings.tsv"}).
+		Dado que o ficheiro \textit{"title.basics.tsv"} já foi transferido para a plataforma \textit{Hadoop HDFS} na tarefa anterior, resta apenas transferir os 3 ficheiros restantes, isto é, \textit{"name.basics.tsv"}, \textit{"title.principals.tsv"} e \textit{"title.ratings.tsv"}.
 		Antes de mostrar as duas alternativas para proceder à transferência destes 3 ficheiros, é importante salientar que a pasta criada na 1ª tarefa (denominada por \textit{data}) é novamente utilizada para armazenar os mesmos. A instrução associada à criação da mesma pasta encontra-se disponível na \hyperref[fig:9]{figura nº 9}.
 
 			\subsubsection{1ª Alternativa}
@@ -423,9 +423,11 @@
 			Por último, para completar a informação relativa a cada ator, foi criada uma classe denominada por \textbf{\textit{Actor2Movies}}. Esta classe consiste na execução de duas tarefas \textit{MapReduce} sobre os dados dos ficheiros presentes no \textit{Hadoop HDFS} e dos dados contidos na tabela gerada no primeiro exercício.
 			
 			Passando à primeira tarefa, esta tem como responsabilidade a geração de pares \textit{(nconst, (originalTitle, averageRating))}, em que \textit{nconst} é o identificador do ator, \textit{originalTitle} representa o título de um filme em que esse ator participou e \textit{averageRating} a classificação média desse mesmo filme.
+			
 			Para atingir este objetivo, são efetuadas três sub-tarefas \textit{map}, a que são dados os nomes \textit{Left}, \textit{Middle} e \textit{Right}, como é habitual em execuções deste tipo. Falando de cada uma em particular, temos que a \textit{Left} toma como entrada o conteúdo do ficheiro \textit{"title.principals.tsv"} e gera um par \textit{(tconst, (L, nconst))} para cada ator \textit{nconst} que participou no filme \textit{tconst}. A \textit{Middle} extrai os dados da tabela criada no primeiro exercício, com a informação de cada filme, e cria pares \textit{(tconst, (M, originalTitle))}, ou seja, a cada identificador de um filme associa o seu título original. Temos ainda a \textit{Right}, que, a partir dos conteúdos do ficheiro \textit{"title.rating.tsv"}, associa a cada identificador de um filme a respetiva classificação \textit{(tconst, (R, averageRating))}.
 			Note-se que as letras \textit{L}, \textit{M} e \textit{R} são prefixadas ao conteúdo das variáveis correspondentes.
-			Como nesta fase de \textit{map} a chave de cada par resultante é o identificador do filme \textit{tconst}, quando se passa à fase \textit{reduce} temos a certeza que, para um dado filme, o seu título, todos os atores que nele participaram e a sua classificação estarão associados à sua chave. Assim, o nosso \textit{reducer} consiste na escrita, para um \textit{sequence file}, de associações do tipo \textit{(nconst, (originalTitle, averageRating))}, ou seja, para cada ator é introduzida uma destas linhas por cada filme em que participou.
+			
+			Como nesta fase de \textit{map} a chave de cada par resultante é o identificador do filme \textit{tconst}, quando se passa à fase \textit{reduce} temos a garantia que, para um dado filme, o seu título, todos os atores que nele participaram e a sua classificação estarão associados à sua chave. Assim, o nosso \textit{reducer} consiste na escrita, para um \textit{sequence file}, de associações do tipo \textit{(nconst, (originalTitle, averageRating))}, ou seja, para cada ator é introduzida uma destas linhas por cada filme em que participou.
 
 			Tal como o docente desta disciplina sugeriu durante a realização do guião nº 4, optou-se por utilizar um \textit{sequence file} em detrimento de um simples ficheiro de texto. Esta decisão recai sobretudo no facto deste tipo de ficheiro se encontrar serializado, no formato binário, em pares chave-valor e, para além disso, ser consideravelmente mais rápido na execução de operações de leitura e escrita de dados.
 			\begin{figure}[H]
@@ -436,8 +438,10 @@
 			\end{figure}
 
 			Estando esta informação armazenada no \textit{HDFS} num \textit{sequence file}, resta apenas executar uma outra tarefa \textit{MapReduce} para inserir os dados na tabela \textit{HBase actors}.
+			
 			Como os dados foram tratados na tarefa anterior, na fase de \textit{map} é apenas necessário passar a informação tal como está para a fase de \textit{reduce}. É aqui, tendo em conta que a cada ator está associada uma lista de pares \textit{(originalTitle, averageRating)}, que será calculado o número de filmes de cada ator e a lista dos 3 melhores filmes. estando os dados previamente processados, isto torna-se trivial, sendo apenas necessário ver o comprimento desta lista para obter o número de filmes do ator e ordenar os mesmos por classificação, escolhendo os primeiros 3. Com vista a tornar a execução determinista, tivemos o cuidado de, em caso de empate na classificação, escolhermos os filmes por ordem alfabética.
-			Para finalizar, os dados são inseridos na tabela pretendida.
+			
+			Por fim, os dados são inseridos na tabela pretendida.
 			\begin{figure}[H]
 				\centering
 				\includegraphics[width=0.9\textwidth]{Imagens/2ª Tarefa - Actor2Movies - 2º Esquema MapReduce.png}
