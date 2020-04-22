@@ -122,7 +122,7 @@
 		Após a execução desta instrução, o \textit{cluster} que será utilizado neste projeto encontra-se corretamente instanciado e, como tal, pode-se proceder à realização das tarefas mencionadas anteriormente.
 
 	\section{1ª Tarefa} \label{sec:Task1}
-		Após descarregar o ficheiro \textit{"title.basics.tsv.gz"} presente na hiperligação do capítulo anterior, optou-se pela utilizão do formato descompactado, ou seja, no formato \textit{.tsv}.
+		Após descarregar o ficheiro \textit{"title.basics.tsv.gz"} presente na hiperligação do capítulo anterior, optou-se pela utilização do formato descompactado, ou seja, no formato \textit{.tsv}.
 		A tomada desta decisão deve-se ao facto de este último permitir a partição de dados (isto é, potencia o \textbf{paralelismo}), ao contrário do formato \textit{.gz} (\textit{gzip}). Para além disso, não é necessário descompactar aquando da sua utilização. 
 		Para além destes, havia ainda a hipótese de utilizar o formato de compressão \textit{.bz2} (\textit{bzip2}), que, apesar de também permitir a partição dos dados, não é tão eficiente como usar o ficheiro descompactado, pelo que persiste a escolha pelo formato \textit{.tsv}.
 		Mostra-se na seguinte figura a instrução associada à descompressão do ficheiro \textit{"title.basics.tsv.gz"}:
@@ -170,8 +170,7 @@
 		
 		\subsection{Criação da tabela \textit{HBase}} \label{subsec:Task1-1}
 		De forma a criar a tabela \textit{HBase} intrínseca a esta tarefa, foi implementada uma classe \textit{Java}, \textbf{\textit{CreateTableMovies}}, que, após conectar-se com a base de dados não relacional \textit{HBase}, trata da sua criação e configuração.
-		Durante esse processo, é produzida apenas uma família de colunas, intitulada \textbf{\textit{details}}, onde será armazenada toda a informação associada aos dados do ficheiro \textit{"title.basics.tsv.gz"}, 
-		sendo que cada coluna deste ficheiro dará origem a uma coluna da tabela.
+		Durante esse processo, é produzida apenas uma família de colunas, intitulada \textbf{\textit{details}}, onde será armazenada toda a informação associada aos dados do ficheiro \textit{"title.basics.tsv.gz"},  sendo que cada coluna deste ficheiro dará origem a uma coluna da tabela.
 
 		De notar também que se atribuiu o nome \textbf{\textit{movies}} à tabela gerada, tal como o nome da classe \textit{Java} transparece.
 
@@ -416,7 +415,7 @@
 			Nesta fase única, são processadas as linhas do ficheiro \textit{"name.basics.tsv"}, previamente inserido na plataforma \textit{Hadoop HDFS}, escolhendo a informação relevante e inserindo o resultado pretendido na tabela \textit{actors}.
 			\begin{figure}[H]
 				\centering
-				\includegraphics[width=0.58\textwidth]{Imagens/2ª Tarefa - Actor2Details - Esquema MapReduce.png}
+				\includegraphics[width=0.8\textwidth]{Imagens/2ª Tarefa - Actor2Details - Esquema MapReduce.png}
 				\caption{2ª Tarefa - \textit{Actor2Details} - Esquema do paradigma \textit{MapReduce}}
 				\label{fig:18}
 			\end{figure}
@@ -466,7 +465,7 @@
 \chapter{Conclusão} \label{ch:Conclusion}
 \large{
 	Para concluir, temos a referir que este trabalho foi bastante enriquecedor e muito provavelmente representativo de uma tarefa comum de posições que exijam o uso de \textit{Big Data} para processamento e armazenamento de informação resultante da observação de diversas fontes.
-	Tivemos a oportunidade de utilizar o paradigma \textit{MapReduce} do \textit{Hadoop} e ainda o sistema de ficheiros \textit{HDFS}. Estas ferramentas, por estarem orientadas para este tipo de tarefas, foram indicadas para este trabalho. Apesar disso, pudemos constatar alguns problemas, pois não nos é dada liberdade total nas operações que queremos efetuar sobre os dados. Um exemplo é a necessidade de existir uma tarefa de \textit{map}, mesmo que tal não seja necessário. Outro poderá ser a obrigatoriedade de escrever os dados para disco entre duas tarefas.
+	Tivemos a oportunidade de utilizar o paradigma \textit{MapReduce} do \textit{Hadoop} e ainda o sistema de ficheiros \textit{HDFS}. Estas ferramentas, por estarem orientadas para este tipo de tarefas, foram indicadas para este trabalho. Apesar disso, pudemos constatar alguns problemas, pois não nos é dada liberdade total sobre as operações que queremos efetuar sobre os dados. Um exemplo é a necessidade de existir uma tarefa de \textit{map}, mesmo que tal não seja necessário. Outro poderá ser a obrigatoriedade de escrever os dados para disco entre duas tarefas.
 	Como vimos em algumas das aulas, desde a criação do \textit{MapReduce} do \textit{Hadoop}, surgiu o \textit{Spark}, que nos dá muito mais liberdade no tipo e ordem das operações que queremos realizar, pelo que poderia facilitar este trabalho, tanto para quem o realizou, como para quem queira compreender o código desenvolvido.
 }
 
