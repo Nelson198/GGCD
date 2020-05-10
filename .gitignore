@@ -6,20 +6,21 @@
 .DS_Store
 target/
 dependency-reduced-pom.xml
+*.iml
 
 # IMDB files
 TP1/data/
 
 # Latex
-TP1/Relatório/*.dvi
-TP1/Relatório/*.aux
-TP1/Relatório/*.fdb_latexmk
-TP1/Relatório/*.fls
-TP1/Relatório/*.lof
-TP1/Relatório/*.log
-TP1/Relatório/*.out
-TP1/Relatório/*.synctex.gz
-TP1/Relatório/*.toc
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.out
+*.dvi
+*.synctex.gz
+*.toc
 
 # Outputs
 out-*/
