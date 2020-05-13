@@ -19,7 +19,7 @@
     $ java -jar target/TP2-1.0-SNAPSHOT.jar ./title.ratings.tsv.gz 120
     ```
 
-* Mode de usar como *container* *docker* ligado a uma rede *Hadoop* :
+* Modo de usar como *container* *docker* ligado a uma rede *Hadoop* :
 
     ```bash
     $ docker run --env-file hadoop.env --network docker-hadoop_default -p 12345:12345 run streamgen hdfs:///input/title.ratings.tsv 120
