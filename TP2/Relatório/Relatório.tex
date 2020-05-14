@@ -111,6 +111,8 @@
     \section{Configuração} \label{sec:Configuration}
     
 	\section{1ª Tarefa} \label{sec:Task1}
+
+
 		\subsection{\textit{Log}} \label{subsec:Task1-Log}
 			\subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
 
@@ -121,16 +123,28 @@
 			\subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
 
 	\section{2ª Tarefa} \label{sec:Task2}
+
+
 	\subsection{\textit{Top10}} \label{subsec:Task2-Top10}
+		
+
 		\subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
 
 	\subsection{\textit{Friends}} \label{subsec:Task2-Friends}
+		Neste exercício é requerido a computação do conjunto de colaboradores associado a cada ator, ou seja, o grupo dos atores que particapam nos mesmos filmes.
+			
+		Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
+		Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela primeira componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
+		De forma a obter o resultado solicitado nesta subtarefa, é necessário, nesta fase da computação, proceder à realização de uma operação denominada por produto cartesiano. Nesta operação computa-se, num dado momento, vários pares de atores que coloboraram num determinado filme.
+		Uma vez realizado este cálculo, é invocado novamente o método \textit{groupByKey} de forma a obter o resultado pretendido, isto é, o conjunto de colaboradores para cada ator presente nos dados públicos do \textit{IMDb}.
+
 		\subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
 
 	\subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
 		\subsubsection{Alternativa} \label{sssec:Task2-Ratings-Alternativa}
 
 	\section{3ª Tarefa} \label{sec:Task3}
+
 
 \chapter{Conclusão} \label{ch:Conclusion}
 \large{

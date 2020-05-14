@@ -33,21 +33,19 @@ public class Top10 {
         SparkConf conf = new SparkConf().setAppName("Top10");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        // Initial processing
-        JavaPairRDD<String, String> jprdd = sc
-            .textFile("hdfs://namenode:9000/data/title.principals.tsv.bz2")
-            .map(l -> l.split("\t"))
-            .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
-            .mapToPair(l -> new Tuple2<>(l[2], l[0]));
+        // Initial processing of the "title.principals.tsv.bz2" file
+        JavaPairRDD<String, String> jprdd = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv.bz2")
+                                              .map(l -> l.split("\t"))
+                                              .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
+                                              .mapToPair(l -> new Tuple2<>(l[2], l[0]));
 
         // Top 10
-        List<Tuple2<Integer, String>> result = jprdd
-            .groupByKey()
-            .mapToPair(pair -> {
-                return new Tuple2<>(pair._1, Iterators.size(pair._2.iterator()));
-            })
-            .mapToPair(pair -> new Tuple2<>(pair._2, pair._1))
-            .top(10, new MyComparator());
+        List<Tuple2<Integer, String>> result = jprdd.groupByKey()
+                                                    .mapToPair(pair -> {
+                                                        return new Tuple2<>(pair._1, Iterators.size(pair._2.iterator()));
+                                                    })
+                                                    .mapToPair(pair -> new Tuple2<>(pair._2, pair._1))
+                                                    .top(10, new MyComparator());
 
         // Output result
         System.out.println("\nTop 10:\n");

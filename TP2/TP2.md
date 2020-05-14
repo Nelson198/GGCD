@@ -74,7 +74,7 @@
 * Modo de usar como servidor local :
 
     ```bash
-    $ java -jar target/TP2-1.0-SNAPSHOT.jar ./title.ratings.tsv.gz 120
+    $ java -jar target/streamgen-1.0-SNAPSHOT.jar ./title.ratings.tsv.gz 120
     ```
 
 * Modo de usar como *container* *docker* ligado a uma rede *Hadoop* :
@@ -92,4 +92,3 @@ Para testar, ligar a `localhost:12345`, por exemplo com :
 ```bash
 $ nc localhost 12345
 ```
-
