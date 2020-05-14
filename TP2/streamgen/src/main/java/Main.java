@@ -1,5 +1,3 @@
-package streamgen;
-
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.sampling.distribution.AhrensDieterExponentialSampler;

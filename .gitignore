@@ -10,6 +10,7 @@ dependency-reduced-pom.xml
 
 # IMDB files
 TP1/data/
+TP2/data/
 
 # Latex
 *.aux
@@ -24,3 +25,4 @@ TP1/data/
 
 # Outputs
 out-*/
+chechpoint/
