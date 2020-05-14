@@ -3,7 +3,9 @@ package batch;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
 import org.spark_project.guava.collect.Iterators;
+
 import scala.Serializable;
 import scala.Tuple2;
 

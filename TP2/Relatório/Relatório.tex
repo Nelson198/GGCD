@@ -89,17 +89,48 @@
 
 \chapter{Implementação} \label{ch:Implementation}
 \large {
-    \section{A} \label{sec:A}
+	Para a realização com sucesso deste trabalho prático, é solicitada a elaboração de três tarefas. Apresentam-se de seguida as mesmas:
+	\begin{enumerate}
+		\item Desenvolver uma componente de processamento de \textit{streams} que produza os seguintes resultados:
+		\begin{itemize}
+			\item \textbf{\textit{Log}}: armazenar todos os votos individuais recebidos, etiquetados com a hora de chegada aproximada ao minuto, em lotes de 10 minutos. Cada lote deve ser guardado num ficheiro cujo nome identifica o período de tempo;
+			\item \textbf{\textit{Top3}}: exibir a cada minuto o top 3 dos títulos que obtiveram melhor classificação média nos últimos 10 minutos;
+			\item \textbf{\textit{Trending}}: apresentar a cada 15 minutos os títulos em que o número de votos recolhido nesse período sejam superiores aos votos obtidos no período anterior, independentemente do valor dos votos.
+		\end{itemize}
+		\item Implementar uma componente de processamento em \textit{batch} que permita realizar as seguintes tarefas:
+		\begin{itemize}
+			\item \textbf{\textit{Top10}}: calcular o top 10 dos atores que participaram em mais títulos diferentes;
+			\item \textbf{\textit{Friends}}: computar o conjunto de colaboradores de cada ator (i.e., outros atores que participaram nos mesmos títulos);
+			\item \textbf{\textit{Ratings}}: atualizar o ficheiro \textsl{"title.ratings.tsv"} tendo em conta o seu conteúdo anterior e os novos votos recebidos até ao momento.
+		\end{itemize}
+		\item Escolher a configuração e a implementação que, para o mesmo \textit{hardware}, permite receber e tratar o maior débito de eventos. Esta tomada de decisão deve ser devidamente justificada com recurso a resultados experimentais.
+	\end{enumerate}
+	
+	Nas próximas secções são evidenciadas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
+
+    \section{Configuração} \label{sec:Configuration}
     
-	\section{B} \label{sec:B}
-		\subsection{B1} \label{subsec:B1}
-			\subsubsection{B11} \label{sssec:B11}
+	\section{1ª Tarefa} \label{sec:Task1}
+		\subsection{\textit{Log}} \label{subsec:Task1-Log}
+			\subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
 
-		\subsection{B2} \label{subsec:B2}
-			\subsubsection{B21} \label{sssec:B21}
-			\subsubsection{B22} \label{sssec:B22}
+		\subsection{\textit{Top3}} \label{subsec:Task1-Top3}
+			\subsubsection{Alternativa} \label{sssec:Task1-Top3-Alternativa} 
 
-		\subsection{B3} \label{subsec:B3}
+		\subsection{\textit{Trending}} \label{subsec:Task1-Trending}
+			\subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
+
+	\section{2ª Tarefa} \label{sec:Task2}
+	\subsection{\textit{Top10}} \label{subsec:Task2-Top10}
+		\subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
+
+	\subsection{\textit{Friends}} \label{subsec:Task2-Friends}
+		\subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
+
+	\subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
+		\subsubsection{Alternativa} \label{sssec:Task2-Ratings-Alternativa}
+
+	\section{3ª Tarefa} \label{sec:Task3}
 
 \chapter{Conclusão} \label{ch:Conclusion}
 \large{
