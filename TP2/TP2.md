@@ -2,63 +2,138 @@
 
 ## TP2
 
-### *Batch*
+### *Swarm setup*
 
-* *Hadoop* :
+&rarr; *Create docker-machine* :
 
-    ```bash
-    $ git clone https://github.com/big-data-europe/docker-hadoop.git
-    $ cd docker-hadoop
-    $ docker-compose up
-    ```
+```bash
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               master
+```
 
-* *Spark* :
+```bash
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               worker1
+```
 
-    ```bash
-    $ git clone https://github.com/big-data-europe/docker-spark.git
-    $ cd docker-spark
-    $ docker-compose up
-    ```
+```bash
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               worker2
+```
 
-    * Acrescentar ao ficheiro *docker-compose.yml* :
+&rarr; *Setup swarm master with* :
 
-        ```bash
-        networks:
-          default:
-            external:
-              name: docker-hadoop_default
-        ```
+```bash
+docker-machine ssh master sudo docker swarm init
+```
 
-* *Dockerfile* :
+&rarr; *Setup each swarm worker with* :
 
-    ```dockerfile
-    FROM bde2020/spark-base
-    COPY target/jarname.jar /
-    ENTRYPOINT ["/spark/bin/spark-submit", "--class", "mainclass", "--master", "spark://spark-master:7077", "/jarname.jar"]
-    ```
+```bash
+docker-machine ssh worker1 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
+```
 
-    * Opções de execução :
+```bash
+docker-machine ssh worker2 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
+```
 
-        ```bash
-        -p 4040:4040 --network docker-hadoop_default --env-file ../docker-hadoop/hadoop.env
-        ```
+&rarr; *Activate master environment* :
 
-* *Clean up with* :
+```bash
+docker-machine env master
+eval $(docker-machine env master)
+```
 
-    ```bash
-    $ docker-compose down
-    $ docker volume prune
-    ```
+&rarr; *List swarm nodes with* :
 
-    &rarr; Transferência do ficheiro *title.principals.tsv* para o *HDFS* :
+```bash
+docker node ls
+```
 
-    ```bash
-    $ docker run --network docker-hadoop_default --env-file docker-hadoop/hadoop.env -it bde2020/hadoop-base bash
-    
-    $ hdfs dfs -mkdir /data
-    
-    $ curl https://datasets.imdbws.com/title.principals.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/title.principals.tsv
-    ```
+#### *Configuration*
+
+&rarr; *Deployment configuration for master* :
+
+```
+deploy:
+    mode: replicated
+    replicas: 1
+    placement:
+        constraints:
+            - "node.role==manager"
+```
+
+&rarr; *Deployment configuration for worker1* :
+
+```
+deploy:
+    mode: replicated
+    replicas: 1
+    placement:
+        constraints:
+            - "node.role==worker"
+            - "node.hostname==worker1"
+```
+
+&rarr; *Deployment configuration for worker2* :
+
+```
+deploy:
+    mode: replicated
+    replicas: 1
+    placement:
+        constraints:
+            - "node.role==worker"
+            - "node.hostname==worker2"
+```
+
+#### *Deployment*
+
+&rarr; *Deploy configuration on swarm with* :
+
+```bash
+docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
+```
+
+&rarr; *Check status with* :
+
+```bash
+docker stack ls
+docker service ls
+docker network ls
+```
+
+&rarr; *Attach client containers as usual with* :
+
+```bash
+docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base bash
+```
+
+&rarr; *Remove configuration from swarm with* :
+
+```bash
+docker stack rm mystack
+```
+
+---
 
 ### *Streamgen*
 
