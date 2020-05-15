@@ -13,7 +13,14 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -44,9 +51,9 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        String name = args.length<1 ? "title.ratings.tsv.bz2" : args[0];
+        String name = args.length < 1 ? "title.ratings.tsv.bz2" : args[0];
 
-        double rate = args.length<2 ? 120 : Double.parseDouble(args[1]);
+        double rate = args.length < 2 ? 120 : Double.parseDouble(args[1]);
 
         log.info("reading IMDb ratings from {}, generating {} events/min", name, rate);
 
@@ -71,7 +78,7 @@ public class Main {
             String format = csf.detect(raw);
             log.info("detected file compressed with {}", format);
             raw = csf.createCompressorInputStream(format, raw);
-        } catch(CompressorException ce) {
+        } catch (CompressorException ce) {
             log.info("no compression detected, parsing raw file");
         }
         BufferedReader br = new BufferedReader(new InputStreamReader(raw));
@@ -81,7 +88,7 @@ public class Main {
         br.readLine(); // discard header
         String line = br.readLine();
         long votes = 0;
-        while(line != null) {
+        while (line != null) {
             String[] row = line.split("\\t");
             votes += Integer.parseInt(row[2]);
             titles.add(new Entry(row[0], Float.parseFloat(row[1]), votes));
@@ -89,21 +96,22 @@ public class Main {
         }
 
         br.close();
-        if (fs != null) fs.close();
+        if (fs != null)
+            fs.close();
 
         log.info("read {} lines", titles.size());
 
         UniformRandomProvider rng = RandomSource.create(RandomSource.MT_64);
-        ContinuousSampler iat = new AhrensDieterExponentialSampler(rng, 1/rate);
+        ContinuousSampler iat = new AhrensDieterExponentialSampler(rng, 1 / rate);
 
         ServerSocket ss = new ServerSocket(12345);
-        while(true) {
+        while (true) {
             log.info("waiting for connection on {}", ss.getLocalSocketAddress());
             try (Socket s = ss.accept()) {
                 log.info("new connection from {}", s.getRemoteSocketAddress());
 
                 // kill the conneciton if something is received
-                new Thread(()->{
+                new Thread(() -> {
                     try {
                         s.getInputStream().read();
                     } catch(Exception e) {
@@ -120,14 +128,16 @@ public class Main {
 
                 Entry target = new Entry("TARGET", 0, 0);
                 while(!s.isClosed()) {
-                    Thread.sleep((long) (iat.sample()*1000*60));
+                    Thread.sleep((long) (iat.sample() * 1000 * 60));
 
                     target.votes = rng.nextLong(votes);
                     int pos = Collections.binarySearch(titles, target);
-                    if (pos<0) pos = -pos;
+                    if (pos < 0)
+                        pos = -pos;
+
                     Entry entry = titles.get(pos);
-                    int rating = (int) (Math.floor(Math.min(10.0, rng.nextFloat()*entry.rating*2.0)));
-                    pw.println(entry.id+"\t"+rating);
+                    int rating = (int) (Math.floor(Math.min(10.0, rng.nextFloat() * entry.rating * 2.0)));
+                    pw.println(entry.id + "\t" + rating);
                     pw.flush();
                 }
             } catch(Exception e) {

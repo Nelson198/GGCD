@@ -41,9 +41,7 @@ public class Top10 {
 
         // Top 10
         List<Tuple2<Integer, String>> result = jprdd.groupByKey()
-                                                    .mapToPair(pair -> {
-                                                        return new Tuple2<>(pair._1, Iterators.size(pair._2.iterator()));
-                                                    })
+                                                    .mapToPair(pair -> new Tuple2<>(pair._1, Iterators.size(pair._2.iterator())))
                                                     .mapToPair(pair -> new Tuple2<>(pair._2, pair._1))
                                                     .top(10, new MyComparator());
 

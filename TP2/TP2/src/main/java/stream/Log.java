@@ -7,14 +7,15 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import scala.Tuple2;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 /**
  * Log
  * TODO - Acabar
  */
 public class Log {
     public static void main(String[] args) throws InterruptedException {
-        long time = System.currentTimeMillis();
-
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setMaster("local[2]")
                                         .setAppName("Top3")
@@ -23,11 +24,11 @@ public class Log {
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
 
         // Initial processing of the "title.ratings.tsv.gz" file
-        JavaPairDStream<String, Float> jpds = sc.socketTextStream("localhost", 12345)
-                                                .map(l -> l.split("\t"))
-                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating"))
-                                                .mapToPair(l -> new Tuple2<>(l[0], Float.parseFloat(l[1])))
-                                                .window(Durations.minutes(10), Durations.minutes(1));
+        JavaPairDStream<String, Tuple2<Integer, LocalDateTime>> jpds = sc
+                .socketTextStream("localhost", 12345)
+                .map(l -> l.split("\t"))
+                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Integer.parseInt(l[1]), LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES))))
+                .window(Durations.minutes(10), Durations.minutes(10));
 
         // Process streaming data
         jpds.foreachRDD(rdd -> rdd.saveAsTextFile("out-Log"));
@@ -36,6 +37,7 @@ public class Log {
         sc.start();
         sc.awaitTermination();
 
-        System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
+        // Close streaming context
+        sc.close();
     }
 }

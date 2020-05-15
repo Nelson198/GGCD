@@ -26,8 +26,6 @@ public class Top3 {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        long time = System.currentTimeMillis();
-
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setMaster("local[2]")
                                         .setAppName("Top3")
@@ -64,7 +62,7 @@ public class Top3 {
         // Process joined data
         joined.mapToPair(t -> new Tuple2<>(t._2._1, new Tuple2<>(t._2._2, t._1)))
               .foreachRDD(rdd -> {
-                  StringBuilder sb = new StringBuilder("\nTop 3 highest ranked movie titles:\n\n");
+                  StringBuilder sb = new StringBuilder("\nTop 3 movie titles with the best average rating:\n\n");
                   for (Tuple2<Float, Tuple2<String, String>> t : rdd.top(3, new MyComparator())) {
                       sb.append(t._2._1).append("\t(").append(t._2._2).append(", ").append(t._1).append(")").append("\n");
                   }
@@ -75,6 +73,7 @@ public class Top3 {
         sc.start();
         sc.awaitTermination();
 
-        System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
+        // Close streaming context
+        sc.close();
     }
 }
