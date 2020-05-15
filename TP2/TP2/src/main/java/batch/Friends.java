@@ -6,8 +6,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Friends
@@ -27,32 +28,26 @@ public class Friends {
                                               .mapToPair(l -> new Tuple2<>(l[0], l[2]));
 
         // Get set of collaborators
-        List<Tuple2<String, ArrayList<String>>> result = jprdd.groupByKey()
-                                                              .flatMapToPair(l -> {
-                                                                  List<Tuple2<String,String>> tuples = new ArrayList<>();
+        List<Tuple2<String, Iterable<String>>> result = jprdd.groupByKey()
+                                                             .flatMapToPair(l -> {
+                                                                 Set<Tuple2<String, String>> pairs = new HashSet<>();
 
-                                                                  // Cartesian Product
-                                                                  l._2.forEach(x -> {
-                                                                      l._2.forEach(y -> {
-                                                                          if(!x.equals(y)) {
-                                                                              tuples.add(new Tuple2<>(x, y));
-                                                                          }
-                                                                      });
-                                                                  });
-
-                                                                  return tuples.iterator();
-                                                              })
-                                                              .groupByKey()
-                                                              .mapToPair(l -> {
-                                                                  ArrayList<String> aux = new ArrayList<>();
-                                                                  l._2.forEach(s -> aux.add(s));
-                                                                  return new Tuple2<>(l._1, aux);
-                                                              })
-                                                              .collect();
+                                                                 // Cartesian Product
+                                                                 l._2.forEach(x -> {
+                                                                     l._2.forEach(y -> {
+                                                                         if(!x.equals(y)) {
+                                                                             pairs.add(new Tuple2<>(x, y));
+                                                                         }
+                                                                     });
+                                                                 });
+                                                                 return pairs.iterator();
+                                                             })
+                                                             .groupByKey()
+                                                             .collect();
 
         // Output result
         System.out.println("Set of collaborators for each actor:\n");
-        for (Tuple2<String, ArrayList<String>> t : result) {
+        for (Tuple2<String, Iterable<String>> t : result) {
             System.out.println(t._1 + " : " + t._2.toString());
         }
 
