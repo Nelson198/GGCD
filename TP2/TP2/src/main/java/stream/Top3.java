@@ -49,14 +49,14 @@ public class Top3 {
         // Initial processing of the "title.ratings.tsv.gz" file
         JavaPairDStream<String, Float> ds = sc.socketTextStream("localhost", 12345)
                                               .map(l -> l.split("\t"))
-                                              .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating"))
-                                              .mapToPair(l -> new Tuple2<>(l[0], Float.parseFloat(l[1])))
+                                              .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Integer.parseInt(l[1]), 1)))
                                               .reduceByKeyAndWindow(
-                                                  (r1, r2) -> r1 + r2,
-                                                  (r1, r2) -> r1 - r2,
+                                                  (r1, r2) -> new Tuple2<>(r1._1 + r2._1, r1._2 + r2._2),
+                                                  (r1, r2) -> new Tuple2<>(r1._1 - r2._1, r1._2 - r2._2),
                                                   Durations.minutes(10),
                                                   Durations.minutes(1)
-                                              );
+                                              )
+                                              .mapToPair(r -> new Tuple2<>(r._1, (float) r._2._1 / r._2._2));
 
         // Join data
         JavaPairDStream<String, Tuple2<Float, String>> joined = ds.transformToPair(rdd -> rdd.join(jprdd));
