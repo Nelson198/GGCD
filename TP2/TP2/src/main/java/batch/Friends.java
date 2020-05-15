@@ -32,7 +32,6 @@ public class Friends {
                                                                   List<Tuple2<String,String>> tuples = new ArrayList<>();
 
                                                                   // Cartesian Product
-                                                                  // TODO - Fazer de forma mais eficiente !
                                                                   l._2.forEach(x -> {
                                                                       l._2.forEach(y -> {
                                                                           if(!x.equals(y)) {
