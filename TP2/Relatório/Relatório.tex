@@ -126,9 +126,22 @@
 
 
 	\subsection{\textit{Top10}} \label{subsec:Task2-Top10}
-		
+		Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
+
+		Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
+		Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela segunda componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
+		Uma vez realizada esta computação, obtém-se para cada ator a lista de filmes em que este participou. Atendendo ao resultado exigido neste exercício, basta, nesta etapa do processamento, efetuar a contagem dos filmes associados a cada ator, filtrando os 10 registos com maiores valores.
+
+		A recolha dos 10 atores que participaram em mais filmes é formalizada com a chamada do método \textit{top}. Esta função permite extrair os \textit{k} maiores registos de um \textit{RDD} segundo uma determinada ordem.
+		Para o caso deste exercício, houve a necessidade de implementar um comparador explícito, numa classe à parte, dado que o tipo de dados \textit{Tuple2} não é, por definição, serializável.
+
+		Tendo em consideração este último detalhe, conclui-se a realização desta subtarefa.
 
 		\subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
+			Uma forma alternativa de resolver este exercício seria, na última fase do processamento, utilizar o método \textit{take} em detrimento da função \textit{top}.
+			Esta escolha não foi tomada em consideração na implementação uma vez que o primeiro método necessita previamente que a informação esteja devidamente ordenada.
+			Esta ordenação teria de ser realizada com a invocação do método \textit{sortByKey(false)}, colocando a contagem dos filmes em que cada ator participou de forma decrescente.
+			Este último facto representa uma ineficiência no cálculo do resultado pretendido.
 
 	\subsection{\textit{Friends}} \label{subsec:Task2-Friends}
 		Neste exercício é requerido a computação do conjunto de colaboradores associado a cada ator, ou seja, o grupo dos atores que particapam nos mesmos filmes.
