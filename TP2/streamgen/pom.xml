@@ -85,7 +85,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                Main
+                                streamgen.Main
                             </mainClass>
                         </manifest>
                     </archive>

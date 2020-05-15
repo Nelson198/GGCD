@@ -68,7 +68,7 @@
 
     ```bash
     $ mvn package
-    $ docker build -t streamgen
+    $ docker build -t streamgen .
     ```
 
 * Modo de usar como servidor local :
@@ -80,7 +80,7 @@
 * Modo de usar como *container* *docker* ligado a uma rede *Hadoop* :
 
     ```bash
-    $ docker run --env-file hadoop.env --network docker-hadoop_default -p 12345:12345 run streamgen hdfs:///input/title.ratings.tsv 120
+    $ docker run --env-file hadoop.env --network docker-hadoop_default -p 12345:12345 streamgen hdfs:///input/title.ratings.tsv 120
     ```
 
 * Parâmetros :
