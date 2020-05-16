@@ -8,6 +8,9 @@ target/
 dependency-reduced-pom.xml
 *.iml
 
+# VSCode
+.vscode
+
 # IMDB files
 TP1/data/
 TP2/data/

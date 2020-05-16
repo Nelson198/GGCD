@@ -8,12 +8,15 @@
 \usepackage{hyperref}
 \usepackage{indentfirst}
 
-\usepackage{fancyvrb}
+\usepackage{graphicx}
+\usepackage{float}
+
+\usepackage{enumitem}
+
+\usepackage{minted}
 \usepackage{xcolor}
 
-\usepackage{graphicx}
-
-\usepackage{float}
+\definecolor{friendlybg}{HTML}{f0f0f0}
 
 % Encoding
 %--------------------------------------
@@ -34,25 +37,25 @@
 % Capa do relatório
 
 \title{
-	Gestão de Grandes Conjuntos de Dados
-	\\ \Large{\textbf{2º Trabalho Prático}}
-	\\ -
-	\\ Mestrado em Engenharia Informática
-	\\ Universidade do Minho
+    Gestão de Grandes Conjuntos de Dados
+    \\ \Large{\textbf{2º Trabalho Prático}}
+    \\ -
+    \\ Mestrado em Engenharia Informática
+    \\ Universidade do Minho
 }
 \author{
-	\begin{tabular}{ll}
-		\textbf{Grupo nº 8}
-		\\
-		\hline
-		PG41080 & João Ribeiro Imperadeiro
+    \begin{tabular}{ll}
+        \textbf{Grupo nº 8}
         \\
-		PG41081 & José Alberto Martins Boticas
-		\\
+        \hline
+        PG41080 & João Ribeiro Imperadeiro
+        \\
+        PG41081 & José Alberto Martins Boticas
+        \\
         PG41091 & Nelson José Dias Teixeira
         \\
         PG41851 & Rui Miguel da Costa Meira
-	\end{tabular}
+    \end{tabular}
 }
 
 \date{\today}
@@ -72,110 +75,337 @@
 
 \chapter{Introdução} \label{ch:Introduction}
 \large {
-	Neste trabalho prático é requerida a concretização e avaliação experimental de tarefas de armazenamento e processamento de dados através do uso da ferramenta computacional \textit{Spark} (\textit{batch} e \textit{streaming}).
-	Por forma a realizar estas tarefas, são utilizados os dados públicos do \textit{IMDb}, que se encontram disponíveis em:
-	\begin{center}
-		\textit{\url{https://www.imdb.com/interfaces/}}
-	\end{center}
+    Neste trabalho prático é requerida a concretização e avaliação experimental de tarefas de armazenamento e processamento de dados através do uso da ferramenta computacional \textit{Spark} (\textit{batch} e \textit{streaming}).
+    Por forma a realizar estas tarefas, são utilizados os dados públicos do \textit{IMDb}, que se encontram disponíveis em:
+    \begin{center}
+        \textit{\url{https://www.imdb.com/interfaces/}}
+    \end{center}
 
-	Para além destes dados, é também utilizado um gerador de \textit{streams}, baseado nos mesmos, que simula uma sequência de votos individuais de utilizadores. Este utensílio foi desenvolvido pelo docente desta unidade curricular e encontra-se disponível na plataforma \textit{Blackboard}.
+    Para além destes dados, é também utilizado um gerador de \textit{streams}, baseado nos mesmos, que simula uma sequência de votos individuais de utilizadores. Este utensílio foi desenvolvido pelo docente desta unidade curricular e encontra-se disponível na plataforma \textit{Blackboard}.
 
-	Ao longo deste documento vão também ser expostos todos os passos tomados durante a implementação das tarefas pedidas neste projeto, incluindo as decisões tomadas pelos elementos deste grupo a nível de algoritmos e parâmetros de configuração.
-	Para além disso são ainda apresentadas todas as instruções que permitem executar e utilizar corretamente os programas desenvolvidos.
-	Por fim, na fase final deste manuscrito, são exibidos os objetivos atingidos após a realização das tarefas propostas.
+    Ao longo deste documento vão também ser expostos todos os passos tomados durante a implementação das tarefas pedidas neste projeto, incluindo as decisões tomadas pelos elementos deste grupo a nível de algoritmos e parâmetros de configuração.
+    Para além disso são ainda apresentadas todas as instruções que permitem executar e utilizar corretamente os programas desenvolvidos.
+    Por fim, na fase final deste manuscrito, são exibidos os objetivos atingidos após a realização das tarefas propostas.
 
-	De salientar também que durante os capítulos que se seguem são identificadas algumas alternativas para concretizar as tarefas indicadas neste trabalho prático.	
+    De salientar também que durante os capítulos que se seguem são identificadas algumas alternativas para concretizar as tarefas indicadas neste trabalho prático.	
 }
 
 \chapter{Implementação} \label{ch:Implementation}
 \large {
-	Para a realização com sucesso deste trabalho prático, é solicitada a elaboração de três tarefas. Apresentam-se de seguida as mesmas:
-	\begin{enumerate}
-		\item Desenvolver uma componente de processamento de \textit{streams} que produza os seguintes resultados:
-		\begin{itemize}
-			\item \textbf{\textit{Log}}: armazenar todos os votos individuais recebidos, etiquetados com a hora de chegada aproximada ao minuto, em lotes de 10 minutos. Cada lote deve ser guardado num ficheiro cujo nome identifica o período de tempo;
-			\item \textbf{\textit{Top3}}: exibir a cada minuto o top 3 dos títulos que obtiveram melhor classificação média nos últimos 10 minutos;
-			\item \textbf{\textit{Trending}}: apresentar a cada 15 minutos os títulos em que o número de votos recolhido nesse período sejam superiores aos votos obtidos no período anterior, independentemente do valor dos votos.
-		\end{itemize}
-		\item Implementar uma componente de processamento em \textit{batch} que permita realizar as seguintes tarefas:
-		\begin{itemize}
-			\item \textbf{\textit{Top10}}: calcular o top 10 dos atores que participaram em mais títulos diferentes;
-			\item \textbf{\textit{Friends}}: computar o conjunto de colaboradores de cada ator (i.e., outros atores que participaram nos mesmos títulos);
-			\item \textbf{\textit{Ratings}}: atualizar o ficheiro \textsl{"title.ratings.tsv"} tendo em conta o seu conteúdo anterior e os novos votos recebidos até ao momento.
-		\end{itemize}
-		\item Escolher a configuração e a implementação que, para o mesmo \textit{hardware}, permite receber e tratar o maior débito de eventos. Esta tomada de decisão deve ser devidamente justificada com recurso a resultados experimentais.
-	\end{enumerate}
-	
-	Nas próximas secções são evidenciadas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
+    Para a realização com sucesso deste trabalho prático, é solicitada a elaboração de três tarefas. Apresentam-se de seguida as mesmas:
+    \begin{enumerate}
+        \item Desenvolver uma componente de processamento de \textit{streams} que produza os seguintes resultados:
+        \begin{itemize}
+            \item \textbf{\textit{Log}}: armazenar todos os votos individuais recebidos, etiquetados com a hora de chegada aproximada ao minuto, em lotes de 10 minutos. Cada lote deve ser guardado num ficheiro cujo nome identifica o período de tempo;
+            \item \textbf{\textit{Top3}}: exibir a cada minuto o top 3 dos títulos que obtiveram melhor classificação média nos últimos 10 minutos;
+            \item \textbf{\textit{Trending}}: apresentar a cada 15 minutos os títulos em que o número de votos recolhido nesse período sejam superiores aos votos obtidos no período anterior, independentemente do valor dos votos.
+        \end{itemize}
+        \item Implementar uma componente de processamento em \textit{batch} que permita realizar as seguintes tarefas:
+        \begin{itemize}
+            \item \textbf{\textit{Top10}}: calcular o top 10 dos atores que participaram em mais títulos diferentes;
+            \item \textbf{\textit{Friends}}: computar o conjunto de colaboradores de cada ator (i.e., outros atores que participaram nos mesmos títulos);
+            \item \textbf{\textit{Ratings}}: atualizar o ficheiro \textsl{"title.ratings.tsv"} tendo em conta o seu conteúdo anterior e os novos votos recebidos até ao momento.
+        \end{itemize}
+        \item Escolher a configuração e a implementação que, para o mesmo \textit{hardware}, permite receber e tratar o maior débito de eventos. Esta tomada de decisão deve ser devidamente justificada com recurso a resultados experimentais.
+    \end{enumerate}
+    
+    Nas próximas secções são evidenciadas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
 
     \section{Configuração} \label{sec:Configuration}
-    
-	\section{1ª Tarefa} \label{sec:Task1}
+        A configuração escolhida para a realização deste projeto coincide com a que foi sugerida pelo docente desta unidade curricular, isto é, o \textbf{\textit{docker swarm}}.
+        Esta configuração permite não só tirar partido da ferramenta computacional \textit{Google Cloud} como também possibilita o uso de plataformas como o \textit{Hadoop HDFS} e o \textit{Apache Spark}.
+        Como seria de esperar, todos os ficheiros de \textit{input} utilizados para atingir os objetivos traçados neste trabalho prático são armazenados no sistema \textit{Hadoop HDFS}.
+        
+        Exibe-se de seguida todos os passos de configuração associados ao \textit{docker swarm}:
+        \begin{enumerate}[label=\textbf{\arabic*.}]
+            \item criação das instâncias relativas às 3 entidades intrínsecas à arquitetura do sistema, isto é, as entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\scriptsize
+                ]{bash}
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image \
+               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               master
+                \end{minted}
+                \caption{Configuração - Criação da instância associada à entidade \textsl{master}}
+                \label{fig:1}
+            \end{figure}
+            
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\scriptsize
+                ]{bash}
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image \
+               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               worker1
+                \end{minted}
+                \caption{Configuração - Criação da instância associada à entidade \textsl{worker1}}
+                \label{fig:2}
+            \end{figure}
+
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\scriptsize
+                ]{bash}
+docker-machine create \
+               --driver google --google-project ferrous-aleph-271712 \
+               --google-zone europe-west1-b \
+               --google-machine-type n1-standard-2 \
+               --google-disk-size=100 \
+               --google-disk-type=pd-ssd \
+               --google-machine-image \
+               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+               worker2
+                \end{minted}
+                \caption{Configuração - Criação da instância associada à entidade \textsl{worker2}}
+                \label{fig:3}
+            \end{figure}
+
+            De salientar que a designação \texttt{ferrous-aleph-271712} corresponde ao identificador do projeto presente na plataforma \textit{Google Cloud} de um dos elementos que compõem este grupo.
+            Assim, esta denominação deve ser substituída pelo nome do projeto do utilizador em causa.
+
+            \item configuração do \textit{swarm} relativo às entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker-machine ssh master sudo docker swarm init
+                \end{minted}
+                \caption{Configuração - \textit{swarm} \textsl{master}}
+                \label{fig:4}
+            \end{figure}
+
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker-machine ssh worker1 sudo docker swarm join --token \
+               SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
+               10.132.0.8:2377
+                \end{minted}
+                \caption{Configuração - \textit{swarm} \textsl{worker1}}
+                \label{fig:5}
+            \end{figure}
+
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker-machine ssh worker2 sudo docker swarm join --token \
+               SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
+               10.132.0.8:2377
+                \end{minted}
+                \caption{Configuração - \textit{swarm} \textsl{worker2}}
+                \label{fig:6}
+            \end{figure}
+
+            \item ativação do ambiente da entidade \textsl{master}:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker-machine env master
+eval $(docker-machine env master)
+                \end{minted}
+                \caption{Configuração - Ativação do ambiente da entidade \textsl{master}}
+                \label{fig:7}
+            \end{figure}
+
+            \item verificação da existência das 3 entidades presentes no sistema e das respetivas propriedades:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker node ls
+                \end{minted}
+                \caption{Configuração - Verificação da existência das 3 entidades do sistema}
+                \label{fig:8}
+            \end{figure}
+
+            \item arranque do sistema com a configuração \textit{swarm} especificada:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
+                \end{minted}
+                \caption{Configuração - Arranque do sistema}
+                \label{fig:9}
+            \end{figure}
+
+            \item acesso à plataforma \textit{Hadoop HDFS} por parte do utilizador:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base \
+       bash
+                \end{minted}
+                \caption{Configuração - Acesso à plataforma \textit{Hadoop HDFS}}
+                \label{fig:10}
+            \end{figure}
+        \end{enumerate}}
+
+        É de realçar que no ficheiro \textit{"docker-compose.yml"} encontra-se a mesma configuração \textit{docker} utilizada no guião nº 8 desta unidade curricular.
+
+    \section{1ª Tarefa} \label{sec:Task1}
 
 
-		\subsection{\textit{Log}} \label{subsec:Task1-Log}
-			\subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
+        \subsection{\textit{Log}} \label{subsec:Task1-Log}
+            \subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
 
-		\subsection{\textit{Top3}} \label{subsec:Task1-Top3}
-			\subsubsection{Alternativa} \label{sssec:Task1-Top3-Alternativa} 
+        \subsection{\textit{Top3}} \label{subsec:Task1-Top3}
+            \subsubsection{Alternativa} \label{sssec:Task1-Top3-Alternativa} 
 
-		\subsection{\textit{Trending}} \label{subsec:Task1-Trending}
-			\subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
+        \subsection{\textit{Trending}} \label{subsec:Task1-Trending}
+            \subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
 
-	\section{2ª Tarefa} \label{sec:Task2}
+    \section{2ª Tarefa} \label{sec:Task2}
 
 
-	\subsection{\textit{Top10}} \label{subsec:Task2-Top10}
-		Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
+        \subsection{\textit{Top10}} \label{subsec:Task2-Top10}
+            Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
 
-		Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
-		Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela segunda componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
-		Uma vez realizada esta computação, obtém-se para cada ator a lista de filmes em que este participou. Atendendo ao resultado exigido neste exercício, basta, nesta etapa do processamento, efetuar a contagem dos filmes associados a cada ator, filtrando os 10 registos com maiores valores.
+            Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
+            Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela segunda componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
+            Uma vez realizada esta computação, obtém-se para cada ator a lista de filmes em que este participou. Atendendo ao resultado exigido neste exercício, basta, nesta etapa do processamento, efetuar a contagem dos filmes associados a cada ator, filtrando os 10 registos com maiores valores.
 
-		A recolha dos 10 atores que participaram em mais filmes é formalizada com a chamada do método \textit{top}. Esta função permite extrair os \textit{k} maiores registos de um \textit{RDD} segundo uma determinada ordem.
-		Para o caso deste exercício, houve a necessidade de implementar um comparador explícito, numa classe à parte, dado que o tipo de dados \textit{Tuple2} não é, por definição, serializável.
+            A recolha dos 10 atores que participaram em mais filmes é formalizada com a chamada do método \textit{top}. Esta função permite extrair os \textit{k} maiores registos de um \textit{RDD} segundo uma determinada ordem.
+            Para o caso deste exercício, houve a necessidade de implementar um comparador explícito, numa classe à parte, dado que o tipo de dados \textit{Tuple2} não é, por definição, serializável.
 
-		Tendo em consideração este último detalhe, conclui-se a realização desta subtarefa.
+            Tendo em consideração este último detalhe, conclui-se a realização desta subtarefa.
 
-		\begin{figure}[H]
-            \centering
-            \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Top10.png}
-            \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Top10}}
-            \label{fig:1}
-        \end{figure}
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Top10.png}
+                \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Top10}}
+                \label{fig:11}
+            \end{figure}
 
-		\subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
-			Uma forma alternativa de resolver este exercício seria, na última fase do processamento, utilizar o método \textit{take} em detrimento da função \textit{top}.
-			Esta escolha não foi tomada em consideração na implementação uma vez que o primeiro método necessita previamente que a informação esteja devidamente ordenada.
-			Esta ordenação teria de ser realizada com a invocação do método \textit{sortByKey(false)}, colocando a contagem dos filmes em que cada ator participou de forma decrescente.
-			Este último facto representa uma ineficiência no cálculo do resultado pretendido uma vez que é efetuada a ordenação completa da informação em causa e, para além disso, realiza-se desnecessariamente um passo computacional extra.
+            \subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
+                Uma forma alternativa de resolver este exercício seria, na última fase do processamento, utilizar o método \textit{take} em detrimento da função \textit{top}.
+                Esta escolha não foi tomada em consideração na implementação uma vez que o primeiro método necessita previamente que a informação esteja devidamente ordenada.
+                Esta ordenação teria de ser realizada com a invocação do método \textit{sortByKey(false)}, colocando a contagem dos filmes em que cada ator participou de forma decrescente.
+                Este último facto representa uma ineficiência no cálculo do resultado pretendido uma vez que é efetuada a ordenação completa da informação em causa e, para além disso, realiza-se desnecessariamente um passo computacional extra.
 
-	\subsection{\textit{Friends}} \label{subsec:Task2-Friends}
-		Neste exercício é requerido a computação do conjunto de colaboradores associado a cada ator, ou seja, o grupo dos atores que particapam nos mesmos filmes.
-			
-		Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
-		Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela primeira componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
-		De forma a obter o resultado solicitado nesta subtarefa, é necessário, nesta fase da computação, proceder à realização de uma operação denominada por produto cartesiano. Nesta operação computa-se, num dado momento, vários pares de atores que coloboraram num determinado filme.
-		Uma vez realizado este cálculo, é invocado novamente o método \textit{groupByKey} de forma a obter o resultado pretendido, isto é, o conjunto de colaboradores para cada ator presente nos dados públicos do \textit{IMDb}.
+        \subsection{\textit{Friends}} \label{subsec:Task2-Friends}
+            Neste exercício é requerido a computação do conjunto de colaboradores associado a cada ator, ou seja, o grupo dos atores que particapam nos mesmos filmes.
+                
+            Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
+            Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela primeira componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
+            De forma a obter o resultado solicitado nesta subtarefa, é necessário, nesta fase da computação, proceder à realização de uma operação denominada por produto cartesiano. Nesta operação computa-se, num dado momento, vários pares de atores que coloboraram num determinado filme.
+            Uma vez realizado este cálculo, é invocado novamente o método \textit{groupByKey} de forma a obter o resultado pretendido, isto é, o conjunto de colaboradores para cada ator presente nos dados públicos do \textit{IMDb}.
 
-		\begin{figure}[H]
-            \centering
-            \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Friends.png}
-            \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Friends}}
-            \label{fig:2}
-        \end{figure}
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Friends.png}
+                \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Friends}}
+                \label{fig:12}
+            \end{figure}
 
-		\subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
+            \subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
 
-	\subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
-		\subsubsection{Alternativa} \label{sssec:Task2-Ratings-Alternativa}
+        \subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
+            \subsubsection{Alternativa} \label{sssec:Task2-Ratings-Alternativa}
 
-	\section{3ª Tarefa} \label{sec:Task3}
+    \section{3ª Tarefa} \label{sec:Task3}
 
 
 \chapter{Conclusão} \label{ch:Conclusion}
 \large{
-	
+    
 }
 
 \appendix
@@ -183,12 +413,12 @@
 \begin{itemize}
     \item Documentação \textit{Java} 8:
     \par \textit{\url{https://docs.oracle.com/javase/8/docs/api/}}
-	\item \textit{Maven}:
-	\par \textit{\url{https://maven.apache.org/}}
-	\item \textit{Apache Spark}:
-	\par \textit{\url{https://spark.apache.org/}}
-	\item \textit{Docker}:
-	\par \textit{\url{https://www.docker.com/}}
+    \item \textit{Maven}:
+    \par \textit{\url{https://maven.apache.org/}}
+    \item \textit{Apache Spark}:
+    \par \textit{\url{https://spark.apache.org/}}
+    \item \textit{Docker}:
+    \par \textit{\url{https://www.docker.com/}}
 \end{itemize}
 
 \end{document}
