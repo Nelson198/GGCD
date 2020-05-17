@@ -2,11 +2,16 @@ package stream;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.Optional;
 import org.apache.spark.streaming.Durations;
+import org.apache.spark.streaming.State;
+import org.apache.spark.streaming.StateSpec;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import scala.Tuple2;
+
+import java.util.List;
 
 /**
  * Trending
@@ -36,6 +41,16 @@ public class Trending {
                                                 .map(l -> l.split("\t"))
                                                 .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
                                                 .window(Durations.minutes(15), Durations.minutes(15));
+
+                                                /*
+                                                .mapWithState(StateSpec.function(
+                                                    (String k, Optional<Integer> v, State<Integer> s) -> {
+                                                        int count = s.exists() ? s.get() : v.get();
+                                                        s.update(count);
+                                                        return v.get() > count;
+                                                    }
+                                                ))
+                                                */
 
                                                 // TODO - Ver slides 140-143 (8-Streaming.pdf)
 
