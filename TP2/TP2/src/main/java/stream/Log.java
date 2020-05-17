@@ -40,7 +40,7 @@ public class Log {
             .socketTextStream("localhost", 12345)
             .map(l -> l.split("\t"))
             .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Integer.parseInt(l[1]), format(LocalDateTime.now()))))
-            .window(Durations.minutes(1), Durations.minutes(1));
+            .window(Durations.minutes(10), Durations.minutes(10));
 
         // Process streaming data
         AtomicInteger i = new AtomicInteger(1);
