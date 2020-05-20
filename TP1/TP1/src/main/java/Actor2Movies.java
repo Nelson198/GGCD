@@ -23,8 +23,10 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -139,10 +141,10 @@ public class Actor2Movies {
 
             // Sort map by value in descending order
             List<Map.Entry<String, Float>> top3 = info.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.<String, Float>comparingByValue().reversed().thenComparing(x -> x.getKey()))
-                    .limit(3)
-                    .collect(Collectors.toList());
+                                                      .stream()
+                                                      .sorted(Map.Entry.<String, Float>comparingByValue().reversed().thenComparing(x -> x.getKey()))
+                                                      .limit(3)
+                                                      .collect(Collectors.toList());
 
             Put put = new Put(Bytes.toBytes(key.toString()));
 

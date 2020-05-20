@@ -1,5 +1,12 @@
 package batch;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -10,11 +17,12 @@ import scala.Tuple2;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,34 +32,41 @@ public class Ratings {
     /**
      * Get log's information, joining all the lots associated.
      */
-    public static void getLog() {
+    public static void getLog(FileSystem fs) {
         try {
             // Check if "Log.txt" exists
-            File file  = new File("Log/Log.txt");
-            if (file.exists()) {
-                System.out.println("[INFO] File \"" + file.getName() + "\" already exists.");
+            Path logOutput = new Path("Log/Log.txt");
+            if (fs.exists(logOutput)) {
+                System.out.println("[INFO] File \"" + logOutput.getName() + "\" already exists.");
             } else {
                 // Create instance of directory
-                File directory = new File("Log");
+                Path logFolder = new Path("Log");
 
-                // Get list of all folders
-                String[] folders = directory.list((current, name) -> new File(current, name).isDirectory());
+                // Get the list of all subfolders
+                List<String> folders = new ArrayList<>();
+                for (FileStatus fileStatus : fs.listStatus(logFolder)) {
+                    if (fileStatus.isDirectory()) {
+                        folders.add(fileStatus.getPath().getName());
+                    }
+                }
 
-                if (folders != null && folders.length != 0) {
-                    Arrays.sort(folders);
-                } else if (folders != null) {
-                    System.out.println("[INFO] Folder \"" + directory.getName() + "\" doesn't contain information regarding the logs.\nPlease run the file \"Log.java\".");
+                if (folders.size() == 0) {
+                    System.out.println("[INFO] Folder \"" + logFolder.getName() + "\" doesn't contain information regarding the logs.\nPlease run the file \"Log.java\".");
                     System.exit(0);
                 } else {
-                    System.err.println("[ERROR] Folder \"" + directory.getName() + "\" doesn't exist.");
+                    System.err.println("[ERROR] Folder \"" + logFolder.getName() + "\" doesn't exist.");
                     System.exit(1);
                 }
 
+                // Create output file "Log.txt"
+                FSDataOutputStream fsdos = fs.create(new Path("Log/Log.txt"), true);
+
                 // Append the log's information in "Log.txt"
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fsdos));
 
                 for (String folder : folders) {
-                    BufferedReader br = new BufferedReader(new FileReader("Log/" + folder + "/part-00000"));
+                    FSDataInputStream fsdis = fs.open(new Path("Log/" + folder + "/part-00000"));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(fsdis));
 
                     String s = br.readLine();
                     while (s != null) {
@@ -63,22 +78,28 @@ public class Ratings {
                 }
                 bw.close();
 
-                System.out.println("[INFO] File \"" + file.getName() + "\" was created successfully.");
+                System.out.println("[INFO] File \"" + logOutput.getName() + "\" was created successfully.");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
     /**
      * Save the file "Ratings/part-00000" in "title.ratings.new.tsv"
      */
-    public static void save() {
+    public static void save(FileSystem fs) {
         try {
-            File file = new File("Ratings/title.ratings.new.tsv");
+            Path output = new Path("Ratings/title.ratings.new.tsv");
 
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-            BufferedReader br = new BufferedReader(new FileReader("Ratings/part-00000"));
+            // Create output file "title.ratings.new.tsv"
+            FSDataOutputStream fsdos = fs.create(output, true);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fsdos));
+
+            // Read file "Ratings/part-00000"
+            FSDataInputStream fsdis = fs.open(new Path("Ratings/part-00000"));
+            BufferedReader br = new BufferedReader(new InputStreamReader(fsdis));
 
             // Add header
             bw.write("tconst\taverageRating\tnumVotes");
@@ -93,31 +114,41 @@ public class Ratings {
             br.close();
             bw.close();
 
-            System.out.println("[INFO] File \"" + file.getName() + "\" was created successfully.");
+            System.out.println("[INFO] File \"" + output.getName() + "\" was created successfully.");
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
     public static void main(String[] args) {
         long time = System.currentTimeMillis();
 
+        // Hadoop HDFS's configuration
+        Configuration c = new Configuration();
+        c.set("fs.default.name", "hdfs://namenode:9000");
+        FileSystem fs = null;
+        try {
+            fs = FileSystem.get(c);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         // Get log's information
-        getLog();
+        getLog(fs);
 
         // Spark configuration
-        SparkConf conf = new SparkConf().setAppName("Ratings")
-                                        .setMaster("local")
-                                        .set("spark.driver.host", "localhost");
+        SparkConf conf = new SparkConf().setAppName("Ratings");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         // Initial processing of the "title.ratings.tsv" file
-        JavaPairRDD<String, Tuple2<Float, Integer>> jprdd1 = sc.textFile("../data/title.ratings.tsv.gz")
+        JavaPairRDD<String, Tuple2<Float, Integer>> jprdd1 = sc.textFile("hdfs://namenode:9000/data/title.ratings.tsv")
                                                                .map(l -> l.split("\t"))
                                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating") && !l[2].equals("numVotes"))
                                                                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));
 
-        JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("Log/Log.txt")
+        JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("hdfs://namenode:9000/Log/Log.txt")
                                                                  .map(l -> {
                                                                      String[] data = l.substring(1, l.length() - 1).split(",\\(");
                                                                      return new String[] {data[0], data[1].split(",")[0]};
@@ -135,13 +166,13 @@ public class Ratings {
 
         // Process joined data
         joined.map(p -> p._1 + "\t" + String.format("%.1f", (p._2._1._1 + p._2._2._2) / (p._2._1._2 + p._2._2._1)) + "\t" + (p._2._1._2 + p._2._2._1))
-              .saveAsTextFile("Ratings");
+              .saveAsTextFile("hdfs://namenode:9000/Ratings");
 
         // Close spark context
         sc.close();
 
         // Produce "title.ratings.new.tsv"
-        save();
+        save(fs);
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
