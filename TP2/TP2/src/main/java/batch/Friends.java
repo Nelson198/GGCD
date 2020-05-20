@@ -6,6 +6,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +34,17 @@ public class Friends {
                                                                  Set<Tuple2<String, String>> pairs = new HashSet<>();
 
                                                                  // Cartesian Product
-                                                                 l._2.forEach(x -> {
-                                                                     l._2.forEach(y -> {
-                                                                         if(!x.equals(y)) {
-                                                                             pairs.add(new Tuple2<>(x, y));
-                                                                         }
-                                                                     });
-                                                                 });
+                                                                 // TODO : Verificar se existe uma forma ainda mais eficiente
+                                                                 List<String> aux = new ArrayList<>();
+                                                                 l._2.forEach(aux::add);
+
+                                                                 for (int i = 0; i < aux.size(); i++) {
+                                                                     String s = aux.get(i);
+                                                                     for (int j = i + 1; j < aux.size(); j++) {
+                                                                         pairs.add(new Tuple2<>(s, aux.get(j)));
+                                                                         pairs.add(new Tuple2<>(aux.get(j), s));
+                                                                     }
+                                                                 }
                                                                  return pairs.iterator();
                                                              })
                                                              .groupByKey()
@@ -50,6 +55,7 @@ public class Friends {
         for (Tuple2<String, Iterable<String>> t : result) {
             System.out.println(t._1 + " : " + t._2.toString());
         }
+        System.out.println();
 
         // Close spark context
         sc.close();

@@ -4,6 +4,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import org.spark_project.guava.collect.Iterators;
+
 import scala.Tuple2;
 
 import java.io.BufferedReader;
@@ -113,26 +115,26 @@ public class Ratings {
         JavaPairRDD<String, Tuple2<Float, Integer>> jprdd1 = sc.textFile("../data/title.ratings.tsv.gz")
                                                                .map(l -> l.split("\t"))
                                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating") && !l[2].equals("numVotes"))
-                                                               .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]), Integer.parseInt(l[2]))));
+                                                               .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));
 
-        JavaPairRDD<String, Integer> jprdd2 = sc.textFile("Log/Log.txt")
-                                                .map(l -> {
-                                                    String[] data = l.substring(1, l.length() - 1).split(",\\(");
-                                                    return new String[] {data[0], data[1].split(",")[0]};
-                                                })
-                                                .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
-                                                .groupByKey()
-                                                .mapToPair(l -> {
-                                                    AtomicInteger votes = new AtomicInteger();
-                                                    l._2.forEach(votes::addAndGet);
-                                                    return new Tuple2<>(l._1, votes.get());
-                                                });
+        JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("Log/Log.txt")
+                                                                 .map(l -> {
+                                                                     String[] data = l.substring(1, l.length() - 1).split(",\\(");
+                                                                     return new String[] {data[0], data[1].split(",")[0]};
+                                                                 })
+                                                                 .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
+                                                                 .groupByKey()
+                                                                 .mapToPair(l -> {
+                                                                     AtomicInteger votes = new AtomicInteger();
+                                                                     l._2.forEach(votes::addAndGet);
+                                                                     return new Tuple2<>(l._1, new Tuple2<>(Iterators.size(l._2.iterator()), votes.get()));
+                                                                 });
 
         // Join data
-        JavaPairRDD<String, Tuple2<Tuple2<Float, Integer>, Integer>> joined = jprdd1.join(jprdd2);
+        JavaPairRDD<String, Tuple2<Tuple2<Float, Integer>, Tuple2<Integer, Integer>>> joined = jprdd1.join(jprdd2);
 
         // Process joined data
-        joined.map(p -> p._1 + "\t" + p._2._1._1 + "\t" + (p._2._1._2 + p._2._2))
+        joined.map(p -> p._1 + "\t" + String.format("%.1f", (p._2._1._1 + p._2._2._2) / (p._2._1._2 + p._2._2._1)) + "\t" + (p._2._1._2 + p._2._2._1))
               .saveAsTextFile("Ratings");
 
         // Close spark context
