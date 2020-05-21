@@ -26,6 +26,8 @@ TP2/data/
 *.synctex.gz
 *.toc
 
+_minted-*/
+
 # Outputs
 out-*/
 .chechpoint/
