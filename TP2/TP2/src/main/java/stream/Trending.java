@@ -35,7 +35,7 @@ public class Trending {
                                               .mapToPair(l -> new Tuple2<>(l[0], l[3]))
                                               .cache();
 
-        // Initial processing of the "title.ratings.tsv.gz" file
+        // Initial processing of the "title.ratings.tsv.bz2" file
         JavaPairDStream<String, Integer> ds = sc.socketTextStream("localhost", 12345)
                                                 .map(l -> l.split("\t"))
                                                 .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))

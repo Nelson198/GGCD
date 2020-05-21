@@ -22,18 +22,16 @@ public class Log {
      */
     public static String format(LocalDateTime ldt) {
         return ldt.truncatedTo(ChronoUnit.MINUTES)
-                  .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+                  .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm"));
     }
 
     public static void main(String[] args) throws InterruptedException {
         // Configure and initialize the JavaStreamingContext
-        SparkConf conf = new SparkConf().setMaster("local[2]")
-                                        .setAppName("Top3");
-
+        SparkConf conf = new SparkConf().setAppName("Top3");
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
 
-        // Initial processing of the "title.ratings.tsv.gz" file
-        JavaDStream<String> jds = sc.socketTextStream("localhost", 12345)
+        // Initial processing of the "title.ratings.tsv.bz2" file
+        JavaDStream<String> jds = sc.socketTextStream("streamgen", 12345)
                                     .map(l -> {
                                         String[] parts = l.split("\t");
                                         return String.join("\t", parts[0], parts[1], format(LocalDateTime.now()));

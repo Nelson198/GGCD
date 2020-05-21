@@ -37,13 +37,19 @@ public class Ratings {
      */
     public static void getLog(FileSystem fs) {
         try {
-            // Check if "Log.txt" exists
+            // Check if the file "Log.txt" exists
             Path logOutput = new Path("hdfs://namenode:9000/Log/Log.txt");
             if (fs.exists(logOutput)) {
                 System.out.println("[INFO] File \"" + logOutput.getName() + "\" already exists.");
             } else {
                 // Create instance of directory
                 Path logFolder = new Path("hdfs://namenode:9000/Log");
+
+                // Check if the folder "Log" exists
+                if(!fs.exists(logFolder)) {
+                    System.err.println("[INFO] Folder \"" + logFolder.getName() + "\" doesn't exist.\nPlease run the file \"Log.java\".");
+                    System.exit(0);
+                }
 
                 // Get the list of all subfolders
                 List<String> folders = new ArrayList<>();
@@ -56,9 +62,6 @@ public class Ratings {
                 if (folders.size() == 0) {
                     System.out.println("[INFO] Folder \"" + logFolder.getName() + "\" doesn't contain information regarding the logs.\nPlease run the file \"Log.java\".");
                     System.exit(0);
-                } else {
-                    System.err.println("[ERROR] Folder \"" + logFolder.getName() + "\" doesn't exist.");
-                    System.exit(1);
                 }
 
                 // Create output file "Log.txt"

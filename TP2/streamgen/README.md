@@ -9,7 +9,7 @@ Modo de usar como servidor local:
 
     $ java -jar target/streamgen-1.0-SNAPSHOT.jar ./title.ratings.tsv.gz 120
     
-Mode de usar como container docker ligado a uma rede Hadoop:
+Modo de usar como container docker ligado a uma rede Hadoop:
 
     $ docker run --env-file ../swarm-spark/hadoop.env --network mystack_default -p 12345:12345 streamgen hdfs:///data/title.ratings.tsv 120
     

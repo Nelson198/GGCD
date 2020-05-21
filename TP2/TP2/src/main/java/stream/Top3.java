@@ -27,24 +27,23 @@ public class Top3 {
 
     public static void main(String[] args) throws InterruptedException {
         // Configure and initialize the JavaStreamingContext
-        SparkConf conf = new SparkConf().setMaster("local[2]")
-                                        .setAppName("Top3");
+        SparkConf conf = new SparkConf().setAppName("Top3");
 
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
         sc.checkpoint("checkpoint");
 
         // Receive streaming data from the sources
 
-        // Initial processing of the "title.basics.tsv.gz" file
+        // Initial processing of the "title.basics.tsv.bz2" file
         JavaPairRDD<String, String> jprdd = sc.sparkContext()
-                                              .textFile("../data/title.basics.tsv.gz")
+                                              .textFile("hdfs://namenode:9000/data/title.basics.tsv.bz2")
                                               .map(l -> l.split("\t"))
                                               .filter(l -> !l[0].equals("tconst") && !l[3].equals("originalTitle"))
                                               .mapToPair(l -> new Tuple2<>(l[0], l[3]))
                                               .cache();
 
-        // Initial processing of the "title.ratings.tsv.gz" file
-        JavaPairDStream<String, Float> ds = sc.socketTextStream("localhost", 12345)
+        // Initial processing of the "title.ratings.tsv.bz2" file
+        JavaPairDStream<String, Float> ds = sc.socketTextStream("streamgen", 12345)
                                               .map(l -> l.split("\t"))
                                               .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Integer.parseInt(l[1]), 1)))
                                               .reduceByKeyAndWindow(
