@@ -12,7 +12,7 @@ Modo de usar como servidor local:
 Mode de usar como container docker ligado a uma rede Hadoop:
 
     $ docker run --env-file ../swarm-spark/hadoop.env --network mystack_default -p 12345:12345 streamgen hdfs:///data/title.ratings.tsv 120
-``
+    
 O primeiro parâmetro é a localização do ficheiro do IMDb (local, http ou hdfs)
 e o segundo é o número de eventos gerados por minuto.
 

@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,12 +38,12 @@ public class Ratings {
     public static void getLog(FileSystem fs) {
         try {
             // Check if "Log.txt" exists
-            Path logOutput = new Path("Log/Log.txt");
+            Path logOutput = new Path("hdfs://namenode:9000/Log/Log.txt");
             if (fs.exists(logOutput)) {
                 System.out.println("[INFO] File \"" + logOutput.getName() + "\" already exists.");
             } else {
                 // Create instance of directory
-                Path logFolder = new Path("Log");
+                Path logFolder = new Path("hdfs://namenode:9000/Log");
 
                 // Get the list of all subfolders
                 List<String> folders = new ArrayList<>();
@@ -59,13 +62,13 @@ public class Ratings {
                 }
 
                 // Create output file "Log.txt"
-                FSDataOutputStream fsdos = fs.create(new Path("Log/Log.txt"), true);
+                FSDataOutputStream fsdos = fs.create(logOutput, true);
 
                 // Append the log's information in "Log.txt"
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fsdos));
 
                 for (String folder : folders) {
-                    FSDataInputStream fsdis = fs.open(new Path("Log/" + folder + "/part-00000"));
+                    FSDataInputStream fsdis = fs.open(new Path("hdfs://namenode:9000/Log/" + folder + "/part-00000"));
                     BufferedReader br = new BufferedReader(new InputStreamReader(fsdis));
 
                     String s = br.readLine();
@@ -91,14 +94,14 @@ public class Ratings {
      */
     public static void save(FileSystem fs) {
         try {
-            Path output = new Path("Ratings/title.ratings.new.tsv");
+            Path output = new Path("hdfs://namenode:9000/Ratings/title.ratings.new.tsv");
 
             // Create output file "title.ratings.new.tsv"
             FSDataOutputStream fsdos = fs.create(output, true);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fsdos));
 
             // Read file "Ratings/part-00000"
-            FSDataInputStream fsdis = fs.open(new Path("Ratings/part-00000"));
+            FSDataInputStream fsdis = fs.open(new Path("hdfs://namenode:9000/Ratings/part-00000"));
             BufferedReader br = new BufferedReader(new InputStreamReader(fsdis));
 
             // Add header
@@ -126,11 +129,10 @@ public class Ratings {
 
         // Hadoop HDFS's configuration
         Configuration c = new Configuration();
-        c.set("fs.default.name", "hdfs://namenode:9000");
         FileSystem fs = null;
         try {
-            fs = FileSystem.get(c);
-        } catch (IOException e) {
+            fs = FileSystem.get(new URI("hdfs://namenode:9000"), c);
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
             System.exit(1);
         }
@@ -149,10 +151,7 @@ public class Ratings {
                                                                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));
 
         JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("hdfs://namenode:9000/Log/Log.txt")
-                                                                 .map(l -> {
-                                                                     String[] data = l.substring(1, l.length() - 1).split(",\\(");
-                                                                     return new String[] {data[0], data[1].split(",")[0]};
-                                                                 })
+                                                                 .map(l -> l.split("\t"))
                                                                  .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
                                                                  .groupByKey()
                                                                  .mapToPair(l -> {

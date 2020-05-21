@@ -28,8 +28,7 @@ public class Top3 {
     public static void main(String[] args) throws InterruptedException {
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setMaster("local[2]")
-                                        .setAppName("Top3")
-                                        .set("spark.driver.host", "localhost");
+                                        .setAppName("Top3");
 
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
         sc.checkpoint("checkpoint");

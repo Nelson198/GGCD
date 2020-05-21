@@ -11,11 +11,10 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import scala.Tuple2;
 
-import java.util.List;
-
 /**
  * Trending
- * TODO - Acabar
+ * TODO - Acabar implementação.
+ *        Testar 1º localmente e depois com recurso ao docker.
  */
 public class Trending {
     public static void main(String[] args) throws InterruptedException {
@@ -42,6 +41,7 @@ public class Trending {
                                                 .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
                                                 .window(Durations.minutes(15), Durations.minutes(15));
 
+                                                // TODO - Ver slides 140-143 (8-Streaming.pdf)
                                                 /*
                                                 .mapWithState(StateSpec.function(
                                                     (String k, Optional<Integer> v, State<Integer> s) -> {
@@ -51,8 +51,6 @@ public class Trending {
                                                     }
                                                 ))
                                                 */
-
-                                                // TODO - Ver slides 140-143 (8-Streaming.pdf)
 
         // Join data
         JavaPairDStream<String, Tuple2<Integer, String>> joined = ds.transformToPair(rdd -> rdd.join(jprdd));
