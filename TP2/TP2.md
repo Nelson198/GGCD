@@ -42,30 +42,30 @@ docker-machine create \
 &rarr; *Setup swarm master with* :
 
 ```bash
-docker-machine ssh master sudo docker swarm init
+$ docker-machine ssh master sudo docker swarm init
 ```
 
 &rarr; *Setup each swarm worker with* :
 
 ```bash
-docker-machine ssh worker1 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
+$ docker-machine ssh worker1 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
 ```
 
 ```bash
-docker-machine ssh worker2 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
+$ docker-machine ssh worker2 sudo docker swarm join --token SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo 10.132.0.8:2377
 ```
 
 &rarr; *Activate master environment* :
 
 ```bash
-docker-machine env master
-eval $(docker-machine env master)
+$ docker-machine env master
+$ eval $(docker-machine env master)
 ```
 
 &rarr; *List swarm nodes with* :
 
 ```bash
-docker node ls
+$ docker node ls
 ```
 
 #### *Configuration*
@@ -105,33 +105,63 @@ deploy:
             - "node.hostname==worker2"
 ```
 
+&rarr; ***Streamgen*** *service* :
+
+```
+streamgen:
+  image: streamgen
+  command: hdfs:///data/title.ratings.tsv 120
+  env_file:
+    - ./hadoop.env
+  deploy:
+    mode: replicated
+    replicas: 1
+    placement:
+      constraints:
+        - "node.role==manager"
+```
+
 #### *Deployment*
 
 &rarr; *Deploy configuration on swarm with* :
 
 ```bash
-docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
+$ docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
 ```
 
 &rarr; *Check status with* :
 
 ```bash
-docker stack ls
-docker service ls
-docker network ls
+$ docker stack ls
+$ docker service ls
+$ docker network ls
 ```
 
 &rarr; *Attach client containers as usual with* :
 
 ```bash
-docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base bash
+$ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base bash
 ```
 
 &rarr; *Remove configuration from swarm with* :
 
 ```bash
-docker stack rm mystack
+$ docker stack rm mystack
 ```
+
+#### *Dockerfile*
+
+```dockerfile
+FROM bde2020/spark-base:2.4.4-hadoop2.7
+COPY target/TP2-1.0-SNAPSHOT.jar /
+ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.classname", "--master", "spark://spark-master:7077", "/TP2-1.0-SNAPSHOT.jar"]
+```
+
+* Opções de execução do ficheiro *Dockerfile* :
+
+    ```bash
+    -p 4040:4040 --network mystack_default --env-file ../swarm-spark/hadoop.env
+    ```
 
 ---
 
@@ -155,7 +185,7 @@ docker stack rm mystack
 * Modo de usar como *container* *docker* ligado a uma rede *Hadoop* :
 
     ```bash
-    $ docker run --env-file hadoop.env --network docker-hadoop_default -p 12345:12345 streamgen hdfs:///input/title.ratings.tsv 120
+    $ docker run --env-file ../swarm-spark/hadoop.env --network mystack_default -p 12345:12345 streamgen hdfs:///data/title.ratings.tsv 120
     ```
 
 * Parâmetros :
@@ -167,3 +197,21 @@ Para testar, ligar a `localhost:12345`, por exemplo com :
 ```bash
 $ nc localhost 12345
 ```
+
+---
+
+### *Hadoop HDFS*
+
+&rarr; Transferência dos ficheiros *IMDb* para a plataforma *Hadoop HDFS* :
+
+* *"title.ratings.tsv.gz"* :
+
+    ```bash
+    curl https://datasets.imdbws.com/title.ratings.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/title.ratings.tsv
+    ```
+
+* *"title.principals.tsv.gz"* :
+
+    ```bash
+    curl https://datasets.imdbws.com/title.principals.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/title.principals.tsv
+    ```
