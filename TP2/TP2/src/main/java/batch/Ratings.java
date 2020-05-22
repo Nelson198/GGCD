@@ -160,14 +160,20 @@ public class Ratings {
                                                                  .mapToPair(l -> {
                                                                      AtomicInteger votes = new AtomicInteger();
                                                                      l._2.forEach(votes::addAndGet);
-                                                                     return new Tuple2<>(l._1, new Tuple2<>(Iterators.size(l._2.iterator()), votes.get()));
+                                                                     return new Tuple2<>(l._1, new Tuple2<>(votes.get(), Iterators.size(l._2.iterator())));
                                                                  });
 
         // Join data
-        JavaPairRDD<String, Tuple2<Tuple2<Float, Integer>, Tuple2<Integer, Integer>>> joined = jprdd1.join(jprdd2);
+        // inputs -> (tconst, (averageRating * numVotes, numVotes)) + (tconst, (sumNewVotes, numNewVotes))
+        // join -> (tconst, ((sumAllVotes, numVotes), (sumNewVotes, numNewVotes)))
+        // middle -> (tconst, (sumAllVotes + sumNewVotes, numVotes + numNewVotes))
+        // return -> (tconst, (newAverageRating, newTotalVotes))
+        JavaPairRDD<String, Tuple2<Float, Integer>> joined = jprdd1.join(jprdd2)
+                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2._1, p._2._1._2 + p._2._2._2)))
+                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)));
 
         // Process joined data
-        joined.map(p -> p._1 + "\t" + String.format("%.1f", (p._2._1._1 + p._2._2._2) / (p._2._1._2 + p._2._2._1)) + "\t" + (p._2._1._2 + p._2._2._1))
+        joined.map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2)
               .saveAsTextFile("hdfs://namenode:9000/Ratings");
 
         // Close spark context
