@@ -93,7 +93,7 @@ public class Ratings {
     }
 
     /**
-     * Save the file "Ratings/part-00000" in "title.ratings.new.tsv"
+     * Save the result in "title.ratings.new.tsv"
      */
     public static void save(FileSystem fs, List<String> ratings) {
         try {
@@ -111,7 +111,6 @@ public class Ratings {
                 bw.write(s);
                 bw.newLine();
             }
-
             bw.close();
 
             System.out.println("[INFO] File \"" + output.getName() + "\" was created successfully.");
@@ -157,20 +156,21 @@ public class Ratings {
                                                                      return new Tuple2<>(l._1, new Tuple2<>(votes.get(), Iterators.size(l._2.iterator())));
                                                                  });
 
-        // Join data
-        // inputs -> (tconst, (averageRating * numVotes, numVotes)) + (tconst, (sumNewVotes, numNewVotes))
-        // join -> (tconst, ((sumAllVotes, numVotes), (sumNewVotes, numNewVotes)))
-        // middle -> (tconst, (sumAllVotes + sumNewVotes, numVotes + numNewVotes))
-        // return -> (tconst, (newAverageRating, newTotalVotes))
+        /* Join data
+           inputs -> (tconst, (averageRating * numVotes, numVotes)) + (tconst, (sumNewVotes, numNewVotes))
+           join   -> (tconst, ((sumAllVotes, numVotes), (sumNewVotes, numNewVotes)))
+           middle -> (tconst, (sumAllVotes + sumNewVotes, numVotes + numNewVotes))
+           return -> (tconst, (newAverageRating, newTotalVotes))
+        */
         List<String> joined = jprdd1.leftOuterJoin(jprdd2)
                             .mapToPair(p -> {
-                                if(p._2._2.isPresent()) {
+                                if(p._2._2.isPresent())
                                     return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2.get()._1, p._2._1._2 + p._2._2.get()._2));
-                                } else
+                                else
                                     return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1, p._2._1._2));
                             })
                             .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)))
-                            .map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2)
+                            .map(p -> String.join("\t", p._1, String.format("%.1f", p._2._1), String.valueOf(p._2._2)))
                             .collect();
 
         // Produce "title.ratings.new.tsv"

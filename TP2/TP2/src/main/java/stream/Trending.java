@@ -40,12 +40,16 @@ public class Trending {
         JavaMapWithStateDStream<String, Integer, Integer, Integer> ds = sc.socketTextStream("localhost", 12345)
                                                 .map(l -> l.split("\t"))
                                                 .mapToPair(l -> new Tuple2<>(l[0], 1))
-                                                .reduceByKeyAndWindow((a, b) -> a+b, (a, b) -> a-b, Durations.minutes(15),Durations.minutes(15))
+                                                .reduceByKeyAndWindow(
+                                                    (a, b) -> a + b,
+                                                    (a, b) -> a - b,
+                                                    Durations.minutes(15),
+                                                    Durations.minutes(15)
+                                                )
                                                 .mapWithState(StateSpec.function(
                                                     (String k, Optional<Integer> v, State<Integer> s) -> {
                                                         if (!v.isPresent()) {
                                                             s.remove();
-                                                            return null;
                                                         } else {
                                                             boolean trending = true;
                                                             if (s.exists())
@@ -55,8 +59,8 @@ public class Trending {
                                                                 System.out.println("Kebolas krending");
 
                                                             s.update(v.get());
-                                                            return null;
                                                         }
+                                                        return null;
                                                     }
                                                 ));
 
