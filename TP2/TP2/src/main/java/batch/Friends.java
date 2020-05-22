@@ -34,15 +34,13 @@ public class Friends {
                                                                  Set<Tuple2<String, String>> pairs = new HashSet<>();
 
                                                                  // Cartesian Product
-                                                                 // TODO : Verificar se existe uma forma ainda mais eficiente
                                                                  List<String> aux = new ArrayList<>();
                                                                  l._2.forEach(aux::add);
 
                                                                  for (int i = 0; i < aux.size(); i++) {
-                                                                     String s = aux.get(i);
                                                                      for (int j = i + 1; j < aux.size(); j++) {
-                                                                         pairs.add(new Tuple2<>(s, aux.get(j)));
-                                                                         pairs.add(new Tuple2<>(aux.get(j), s));
+                                                                         pairs.add(new Tuple2<>(aux.get(i), aux.get(j)));
+                                                                         pairs.add(new Tuple2<>(aux.get(j), aux.get(i)));
                                                                      }
                                                                  }
                                                                  return pairs.iterator();

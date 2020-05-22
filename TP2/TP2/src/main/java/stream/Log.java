@@ -27,7 +27,7 @@ public class Log {
 
     public static void main(String[] args) throws InterruptedException {
         // Configure and initialize the JavaStreamingContext
-        SparkConf conf = new SparkConf().setAppName("Top3");
+        SparkConf conf = new SparkConf().setAppName("Log");
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
 
         // Initial processing of the "title.ratings.tsv.bz2" file
@@ -36,12 +36,20 @@ public class Log {
                                         String[] parts = l.split("\t");
                                         return String.join("\t", parts[0], parts[1], format(LocalDateTime.now()));
                                     })
-                                    .window(Durations.minutes(10), Durations.minutes(10));
+                                    .window(Durations.minutes(10), Durations.minutes(1));
 
         // Process streaming data
         AtomicInteger i = new AtomicInteger(1);
-        jds.foreachRDD(rdd -> rdd.coalesce(1)
-                                 .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.getAndIncrement()) + " - " + format(LocalDateTime.now())));
+        AtomicInteger addedToFile = new AtomicInteger(0);
+        jds.foreachRDD(rdd -> {
+            if (addedToFile.incrementAndGet() == 10) {
+                rdd.coalesce(1)
+                   .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.get()) + " - " + format(LocalDateTime.now()));
+
+                addedToFile.set(0);
+                i.incrementAndGet();
+            }
+        });
 
         // Execute the Spark workflow defined above
         sc.start();
