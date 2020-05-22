@@ -6,6 +6,7 @@ import org.apache.spark.api.java.Optional;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.State;
 import org.apache.spark.streaming.StateSpec;
+import org.apache.spark.streaming.api.java.JavaMapWithStateDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
@@ -36,21 +37,28 @@ public class Trending {
                                               .cache();
 
         // Initial processing of the "title.ratings.tsv.bz2" file
-        JavaPairDStream<String, Integer> ds = sc.socketTextStream("localhost", 12345)
+        JavaMapWithStateDStream<String, Integer, Integer, Integer> ds = sc.socketTextStream("localhost", 12345)
                                                 .map(l -> l.split("\t"))
-                                                .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
-                                                .window(Durations.minutes(15), Durations.minutes(15));
-
-                                                // TODO - Ver slides 140-143 (8-Streaming.pdf)
-                                                /*
+                                                .mapToPair(l -> new Tuple2<>(l[0], 1))
+                                                .reduceByKeyAndWindow((a, b) -> a+b, (a, b) -> a-b, Durations.minutes(15),Durations.minutes(15))
                                                 .mapWithState(StateSpec.function(
                                                     (String k, Optional<Integer> v, State<Integer> s) -> {
-                                                        int count = s.exists() ? s.get() : v.get();
-                                                        s.update(count);
-                                                        return v.get() > count;
+                                                        if (!v.isPresent()) {
+                                                            s.remove();
+                                                            return null;
+                                                        } else {
+                                                            boolean trending = true;
+                                                            if (s.exists())
+                                                                trending = v.get() > s.get();
+
+                                                            if (trending)
+                                                                System.out.println("Kebolas krending");
+
+                                                            s.update(v.get());
+                                                            return null;
+                                                        }
                                                     }
-                                                ))
-                                                */
+                                                ));
 
         // Join data
         JavaPairDStream<String, Tuple2<Integer, String>> joined = ds.transformToPair(rdd -> rdd.join(jprdd));

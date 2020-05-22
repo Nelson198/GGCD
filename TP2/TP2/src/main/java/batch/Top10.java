@@ -1,16 +1,12 @@
 package batch;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Serializable;
 import scala.Tuple2;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 /**
  * Top10
@@ -34,36 +30,32 @@ public class Top10 {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         // Initial processing of the "title.principals.tsv.bz2" file
-        JavaPairRDD<String, String> jprdd1 = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv.bz2")
+        List<Tuple2<Integer, String>> top10 = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv.bz2")
                                                .map(l -> l.split("\t"))
                                                .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
-                                               .mapToPair(l -> new Tuple2<>(l[2], l[0]));
+                                               .mapToPair(l -> new Tuple2<>(l[2], l[0]))
+                                               .groupByKey()
+                                               .mapToPair(p -> {
+                                                   Set<String> h = new HashSet<>();
+                                                   p._2.forEach(h::add);
+                                                   return new Tuple2<>(h.size(), p._1);
+                                               })
+                                               .top(10, new MyComparator());
+
+        List<String> top10ActorsIds = new ArrayList<>();
+        top10.forEach(t -> top10ActorsIds.add(t._2));
 
         // Initial processing of the "name.basics.tsv.bz2" file
-        JavaPairRDD<String, String> jprdd2 = sc.textFile("hdfs://namenode:9000/data/name.basics.tsv.bz2")
+        Map<String, String> names = sc.textFile("hdfs://namenode:9000/data/name.basics.tsv.bz2")
                                                .map(l -> l.split("\t"))
-                                               .filter(l -> !l[0].equals("nconst") && !l[1].equals("primaryName"))
-                                               .mapToPair(l -> new Tuple2<>(l[0], l[1]));
-
-        // Join data
-        JavaPairRDD<String, String> joined = jprdd2.join(jprdd1)
-                                                   .mapToPair(p -> new Tuple2<>(p._2._1, p._2._2));
-
-        // Process joined data
-        List<Tuple2<Integer, String>> result = joined.groupByKey()
-                                                     .mapToPair(p -> {
-                                                         Set<String> h = new HashSet<>();
-                                                         p._2.forEach(h::add);
-                                                         return new Tuple2<>(p._1, h);
-                                                     })
-                                                     .mapToPair(p -> new Tuple2<>(p._1, p._2.size()))
-                                                     .mapToPair(p -> new Tuple2<>(p._2, p._1))
-                                                     .top(10, new MyComparator());
+                                               .filter(l -> !l[0].equals("nconst") && !l[1].equals("primaryName") && top10ActorsIds.contains(l[0]))
+                                               .mapToPair(l -> new Tuple2<>(l[0], l[1]))
+                                               .collectAsMap();
 
         // Output result
         System.out.println("\nTop 10:\n");
-        for (Tuple2<Integer, String> t : result) {
-            System.out.println(t._2 + " : " + t._1);
+        for (Tuple2<Integer, String> t : top10) {
+            System.out.println(names.get(t._2) + " : " + t._1);
         }
         System.out.println();
 
