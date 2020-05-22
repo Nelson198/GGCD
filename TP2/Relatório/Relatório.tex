@@ -105,12 +105,12 @@
         \item Desenvolver uma componente de processamento de \textit{streams} que produza os seguintes resultados:
         \begin{itemize}
             \item \textbf{\textit{Log}}: armazenar todos os votos individuais recebidos, etiquetados com a hora de chegada aproximada ao minuto, em lotes de 10 minutos. Cada lote deve ser guardado num ficheiro cujo nome identifica o período de tempo;
-            \item \textbf{\textit{Top3}}: exibir a cada minuto o top 3 dos títulos que obtiveram melhor classificação média nos últimos 10 minutos;
+            \item \textbf{\textit{Top3}}: exibir a cada minuto o \textit{top} 3 dos títulos que obtiveram melhor classificação média nos últimos 10 minutos;
             \item \textbf{\textit{Trending}}: apresentar a cada 15 minutos os títulos em que o número de votos recolhido nesse período sejam superiores aos votos obtidos no período anterior, independentemente do valor dos votos.
         \end{itemize}
         \item Implementar uma componente de processamento em \textit{batch} que permita realizar as seguintes tarefas:
         \begin{itemize}
-            \item \textbf{\textit{Top10}}: calcular o top 10 dos atores que participaram em mais títulos diferentes;
+            \item \textbf{\textit{Top10}}: calcular o \textit{top} 10 dos atores que participaram em mais títulos diferentes;
             \item \textbf{\textit{Friends}}: computar o conjunto de colaboradores de cada ator (i.e., outros atores que participaram nos mesmos títulos);
             \item \textbf{\textit{Ratings}}: atualizar o ficheiro \textsl{"title.ratings.tsv"} tendo em conta o seu conteúdo anterior e os novos votos recebidos até ao momento.
         \end{itemize}
@@ -325,6 +325,60 @@ docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
                 \label{fig:9}
             \end{figure}
 
+            É de realçar que no ficheiro \textit{"docker-compose.yml"} encontra-se uma configuração \textit{docker} semelhante à que foi utilizada no guião nº 8 desta unidade curricular.
+            A única diferença presente no mesmo diz respeito à integração do gerador de \textit{streams} (\textit{streamgen}) desenvolvido pelo docente como um \textit{container docker} do sistema.
+            Assim, no momento do arranque do sistema, a ferramenta \textit{streamgen} é convenientemente invocada, ficando à espera de novas conexões por parte dos utilizadores.
+            Apresenta-se de seguida a configuração presente no ficheiro \textit{"docker-compose.yml"} relativa ao \textit{streamgen}:
+
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+streamgen:
+  image: streamgen
+  command: hdfs:///data/title.ratings.tsv 120
+  env_file:
+    - ./hadoop.env
+  deploy:
+    mode: replicated
+    replicas: 1
+    placement:
+      constraints:
+        - "node.role==manager"
+                \end{minted}
+                \caption{Configuração - Ficheiro \textit{"docker-compose.yml"} - \textit{streamgen}}
+                \label{fig:10}
+            \end{figure}
+
+            \item verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}[
+                    style=manni,
+                    bgcolor=friendlybg,
+                    linenos,
+                    frame=lines,
+                    framerule=0.6pt,
+                    framesep=5pt,
+                    rulecolor=orange,
+                    fontsize=\footnotesize
+                ]{bash}
+docker stack ls
+docker service ls
+docker network ls
+                \end{minted}
+                \caption{Configuração - Verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}}
+                \label{fig:11}
+            \end{figure}
+
             \item acesso à plataforma \textit{Hadoop HDFS} por parte do utilizador:
             \begin{figure}[H]
                 \centering
@@ -342,11 +396,11 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
        bash
                 \end{minted}
                 \caption{Configuração - Acesso à plataforma \textit{Hadoop HDFS}}
-                \label{fig:10}
+                \label{fig:12}
             \end{figure}
         \end{enumerate}}
 
-        É de realçar que no ficheiro \textit{"docker-compose.yml"} encontra-se a mesma configuração \textit{docker} utilizada no guião nº 8 desta unidade curricular.
+        Com a concretização dos 7 passos descritos acima fica concluída a configuração associada à ao utensílio \textit{docker swarm}.
 
     \section{1ª Tarefa} \label{sec:Task1}
 
@@ -379,7 +433,7 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
                 \centering
                 \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Top10.png}
                 \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Top10}}
-                \label{fig:11}
+                \label{fig:13}
             \end{figure}
 
             \subsubsection{Alternativa} \label{sssec:Task2-Top10-Alternativa}
@@ -400,7 +454,7 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
                 \centering
                 \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Friends.png}
                 \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Friends}}
-                \label{fig:12}
+                \label{fig:14}
             \end{figure}
 
             \subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
@@ -423,10 +477,12 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
     \par \textit{\url{https://docs.oracle.com/javase/8/docs/api/}}
     \item \textit{Maven}:
     \par \textit{\url{https://maven.apache.org/}}
-    \item \textit{Apache Spark}:
-    \par \textit{\url{https://spark.apache.org/}}
     \item \textit{Docker}:
     \par \textit{\url{https://www.docker.com/}}
+    \item \textit{Apache Spark}:
+    \par \textit{\url{https://spark.apache.org/}}
+    \item \textit{Apache Hadoop}:
+    \par \textit{\url{http://hadoop.apache.org/}}
 \end{itemize}
 
 \end{document}
