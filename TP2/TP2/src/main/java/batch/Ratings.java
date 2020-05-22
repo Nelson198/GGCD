@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import org.spark_project.guava.collect.Iterators;
@@ -95,7 +96,7 @@ public class Ratings {
     /**
      * Save the file "Ratings/part-00000" in "title.ratings.new.tsv"
      */
-    public static void save(FileSystem fs) {
+    public static void save(FileSystem fs, JavaRDD<String> rdd) {
         try {
             Path output = new Path("hdfs://namenode:9000/Ratings/title.ratings.new.tsv");
 
@@ -103,21 +104,15 @@ public class Ratings {
             FSDataOutputStream fsdos = fs.create(output, true);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fsdos));
 
-            // Read file "Ratings/part-00000"
-            FSDataInputStream fsdis = fs.open(new Path("hdfs://namenode:9000/Ratings/part-00000"));
-            BufferedReader br = new BufferedReader(new InputStreamReader(fsdis));
-
             // Add header
             bw.write("tconst\taverageRating\tnumVotes");
             bw.newLine();
 
-            String s = br.readLine();
-            while (s != null) {
+            rdd.foreach(s -> {
                 bw.write(s);
                 bw.newLine();
-                s = br.readLine();
-            }
-            br.close();
+            });
+
             bw.close();
 
             System.out.println("[INFO] File \"" + output.getName() + "\" was created successfully.");
@@ -153,12 +148,6 @@ public class Ratings {
                                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating") && !l[2].equals("numVotes"))
                                                                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));
 
-        JavaPairRDD<String, String> titles = sc.textFile("hdfs://namenode:9000/data/title.basics.tsv")
-                .map(l -> l.split("\t"))
-                .filter(l -> !l[0].equals("tconst") && !l[3].equals("originalTitle"))
-                .mapToPair(l -> new Tuple2<>(l[0], l[3]));
-
-
         JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("hdfs://namenode:9000/Log/Log.txt")
                                                                  .map(l -> l.split("\t"))
                                                                  .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
@@ -174,26 +163,21 @@ public class Ratings {
         // join -> (tconst, ((sumAllVotes, numVotes), (sumNewVotes, numNewVotes)))
         // middle -> (tconst, (sumAllVotes + sumNewVotes, numVotes + numNewVotes))
         // return -> (tconst, (newAverageRating, newTotalVotes))
-        JavaPairRDD<String, Tuple2<Float, Integer>> joined = jprdd1.join(jprdd2)
-                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2._1, p._2._1._2 + p._2._2._2)))
-                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)));
-
-        // Join movies' titles
-        // inputs -> (tconst, (newAverageRating, newTotalVotes)) + (tconst, originalTitle)
-        // join -> (tconst, ((newAverageRating, newTotalVotes), (tconst, originalTitle)) )
-        // return -> (originalTitle, (newAverageRating, newTotalVotes))
-        JavaPairRDD<String, Tuple2<Float, Integer>> output = joined.join(titles)
-                            .mapToPair(p -> new Tuple2<>(p._2._2, p._2._1));
-
-        // Process joined data
-        output.map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2)
-              .saveAsTextFile("hdfs://namenode:9000/Ratings");
+        JavaRDD<String> joined = jprdd1.leftOuterJoin(jprdd2)
+                            .mapToPair(p -> {
+                                if(p._2._2.isPresent()) {
+                                    return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2.get()._1, p._2._1._2 + p._2._2.get()._2));
+                                } else
+                                    return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1, p._2._1._2));
+                            })
+                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)))
+                            .map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2);
 
         // Close spark context
         sc.close();
 
         // Produce "title.ratings.new.tsv"
-        save(fs);
+        save(fs, joined);
 
         System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
