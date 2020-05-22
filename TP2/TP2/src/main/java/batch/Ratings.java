@@ -153,6 +153,12 @@ public class Ratings {
                                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating") && !l[2].equals("numVotes"))
                                                                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));
 
+        JavaPairRDD<String, String> titles = sc.textFile("hdfs://namenode:9000/data/title.basics.tsv")
+                .map(l -> l.split("\t"))
+                .filter(l -> !l[0].equals("tconst") && !l[3].equals("originalTitle"))
+                .mapToPair(l -> new Tuple2<>(l[0], l[3]));
+
+
         JavaPairRDD<String, Tuple2<Integer, Integer>> jprdd2 = sc.textFile("hdfs://namenode:9000/Log/Log.txt")
                                                                  .map(l -> l.split("\t"))
                                                                  .mapToPair(l -> new Tuple2<>(l[0], Integer.parseInt(l[1])))
@@ -172,8 +178,15 @@ public class Ratings {
                             .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2._1, p._2._1._2 + p._2._2._2)))
                             .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)));
 
+        // Join movies' titles
+        // inputs -> (tconst, (newAverageRating, newTotalVotes)) + (tconst, originalTitle)
+        // join -> (tconst, ((newAverageRating, newTotalVotes), (tconst, originalTitle)) )
+        // return -> (originalTitle, (newAverageRating, newTotalVotes))
+        JavaPairRDD<String, Tuple2<Float, Integer>> output = joined.join(titles)
+                            .mapToPair(p -> new Tuple2<>(p._2._2, p._2._1));
+
         // Process joined data
-        joined.map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2)
+        output.map(p -> p._1 + "\t" + String.format("%.1f", p._2._1) + "\t" + p._2._2)
               .saveAsTextFile("hdfs://namenode:9000/Ratings");
 
         // Close spark context
