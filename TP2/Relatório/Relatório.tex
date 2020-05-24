@@ -5,6 +5,8 @@
 \setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}
 
+\usepackage{titlepic}
+
 \usepackage{hyperref}
 \usepackage{indentfirst}
 
@@ -16,9 +18,17 @@
 \usepackage{minted}
 \usepackage{xcolor}
 
-\usepackage{titlepic}
-
 \definecolor{friendlybg}{HTML}{f0f0f0}
+\setminted[bash]{
+	style=manni,
+	bgcolor=friendlybg,
+	linenos,
+	frame=lines,
+	framerule=0.6pt,
+	framesep=5pt,
+	rulecolor=orange,
+	fontsize=\footnotesize
+}
 
 % Encoding
 %--------------------------------------
@@ -129,16 +139,7 @@
             \item criação das instâncias relativas às 3 entidades intrínsecas à arquitetura do sistema, isto é, as entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\scriptsize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
@@ -146,7 +147,7 @@ docker-machine create \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image \
-               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+       https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                master
                 \end{minted}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{master}}
@@ -155,16 +156,7 @@ docker-machine create \
             
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\scriptsize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
@@ -172,7 +164,7 @@ docker-machine create \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image \
-               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+       https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                worker1
                 \end{minted}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{worker1}}
@@ -181,16 +173,7 @@ docker-machine create \
 
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\scriptsize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
@@ -198,7 +181,7 @@ docker-machine create \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image \
-               https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
+       https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                worker2
                 \end{minted}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{worker2}}
@@ -211,16 +194,7 @@ docker-machine create \
             \item configuração do \textit{swarm} relativo às entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine ssh master sudo docker swarm init
                 \end{minted}
                 \caption{Configuração - \textit{swarm} \textsl{master}}
@@ -229,16 +203,7 @@ docker-machine ssh master sudo docker swarm init
 
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine ssh worker1 sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
@@ -249,16 +214,7 @@ docker-machine ssh worker1 sudo docker swarm join --token \
 
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine ssh worker2 sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
@@ -270,16 +226,7 @@ docker-machine ssh worker2 sudo docker swarm join --token \
             \item ativação do ambiente da entidade \textsl{master}:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker-machine env master
 eval $(docker-machine env master)
                 \end{minted}
@@ -290,16 +237,7 @@ eval $(docker-machine env master)
             \item verificação da existência das 3 entidades presentes no sistema e das respetivas propriedades:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker node ls
                 \end{minted}
                 \caption{Configuração - Verificação da existência das 3 entidades do sistema}
@@ -309,16 +247,7 @@ docker node ls
             \item arranque do sistema com a configuração \textit{swarm} especificada:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
                 \end{minted}
                 \caption{Configuração - Arranque do sistema}
@@ -332,16 +261,7 @@ docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
 
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 streamgen:
   image: streamgen
   command: hdfs:///data/title.ratings.tsv 120
@@ -361,16 +281,7 @@ streamgen:
             \item verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker stack ls
 docker service ls
 docker network ls
@@ -382,16 +293,7 @@ docker network ls
             \item acesso à plataforma \textit{Hadoop HDFS} por parte do utilizador:
             \begin{figure}[H]
                 \centering
-                \begin{minted}[
-                    style=manni,
-                    bgcolor=friendlybg,
-                    linenos,
-                    frame=lines,
-                    framerule=0.6pt,
-                    framesep=5pt,
-                    rulecolor=orange,
-                    fontsize=\footnotesize
-                ]{bash}
+                \begin{minted}{bash}
 docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base \
        bash
                 \end{minted}
@@ -404,7 +306,6 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
 
     \section{1ª Tarefa} \label{sec:Task1}
 
-
         \subsection{\textit{Log}} \label{subsec:Task1-Log}
             \subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
 
@@ -415,7 +316,6 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
             \subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
 
     \section{2ª Tarefa} \label{sec:Task2}
-
 
         \subsection{\textit{Top10}} \label{subsec:Task2-Top10}
             Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
