@@ -54,10 +54,8 @@ public class Trending {
                                                             boolean trending = true;
                                                             if (s.exists())
                                                                 trending = v.get() > s.get();
-
                                                             if (trending)
                                                                 System.out.println("Kebolas krending");
-
                                                             s.update(v.get());
                                                         }
                                                         return null;

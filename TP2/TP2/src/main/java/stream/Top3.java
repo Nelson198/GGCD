@@ -33,7 +33,6 @@ public class Top3 {
         sc.checkpoint("checkpoint");
 
         // Receive streaming data from the sources
-
         // Initial processing of the "title.basics.tsv.bz2" file
         JavaPairRDD<String, String> jprdd = sc.sparkContext()
                                               .textFile("hdfs://namenode:9000/data/title.basics.tsv.bz2")

@@ -163,15 +163,15 @@ public class Ratings {
            return -> (tconst, (newAverageRating, newTotalVotes))
         */
         List<String> joined = jprdd1.leftOuterJoin(jprdd2)
-                            .mapToPair(p -> {
-                                if(p._2._2.isPresent())
-                                    return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2.get()._1, p._2._1._2 + p._2._2.get()._2));
-                                else
-                                    return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1, p._2._1._2));
-                            })
-                            .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)))
-                            .map(p -> String.join("\t", p._1, String.format("%.1f", p._2._1), String.valueOf(p._2._2)))
-                            .collect();
+                                    .mapToPair(p -> {
+                                        if(p._2._2.isPresent())
+                                            return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1 + p._2._2.get()._1, p._2._1._2 + p._2._2.get()._2));
+                                        else
+                                            return new Tuple2<>(p._1, new Tuple2<>(p._2._1._1, p._2._1._2));
+                                    })
+                                    .mapToPair(p -> new Tuple2<>(p._1, new Tuple2<>(p._2._1 / p._2._2, p._2._2)))
+                                    .map(p -> String.join("\t", p._1, String.format("%.1f", p._2._1), String.valueOf(p._2._2)))
+                                    .collect();
 
         // Produce "title.ratings.new.tsv"
         save(fs, joined);
