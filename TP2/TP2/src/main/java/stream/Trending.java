@@ -36,31 +36,31 @@ public class Trending {
                                               .mapToPair(l -> new Tuple2<>(l[0], l[3]))
                                               .cache();
 
-        // Initial processing of the "title.ratings.tsv.bz2" file
+        // Streamgen
         JavaMapWithStateDStream<String, Integer, Integer, Integer> ds = sc.socketTextStream("localhost", 12345)
-                                                .map(l -> l.split("\t"))
-                                                .mapToPair(l -> new Tuple2<>(l[0], 1))
-                                                .reduceByKeyAndWindow(
-                                                    (a, b) -> a + b,
-                                                    (a, b) -> a - b,
-                                                    Durations.minutes(15),
-                                                    Durations.minutes(15)
-                                                )
-                                                .mapWithState(StateSpec.function(
-                                                    (String k, Optional<Integer> v, State<Integer> s) -> {
-                                                        if (!v.isPresent()) {
-                                                            s.remove();
-                                                        } else {
-                                                            boolean trending = true;
-                                                            if (s.exists())
-                                                                trending = v.get() > s.get();
-                                                            if (trending)
-                                                                System.out.println("Kebolas krending");
-                                                            s.update(v.get());
-                                                        }
-                                                        return null;
-                                                    }
-                                                ));
+                                                                          .map(l -> l.split("\t"))
+                                                                          .mapToPair(l -> new Tuple2<>(l[0], 1))
+                                                                          .reduceByKeyAndWindow(
+                                                                              (a, b) -> a + b,
+                                                                              (a, b) -> a - b,
+                                                                              Durations.minutes(15),
+                                                                              Durations.minutes(15)
+                                                                          )
+                                                                          .mapWithState(StateSpec.function(
+                                                                              (String k, Optional<Integer> v, State<Integer> s) -> {
+                                                                                  if (!v.isPresent()) {
+                                                                                      s.remove();
+                                                                                  } else {
+                                                                                      boolean trending = true;
+                                                                                      if (s.exists())
+                                                                                          trending = v.get() > s.get();
+                                                                                      if (trending)
+                                                                                          System.out.println("Something");
+                                                                                      s.update(v.get());
+                                                                                  }
+                                                                                  return null;
+                                                                              }
+                                                                          ));
 
         // Join data
         JavaPairDStream<String, Tuple2<Integer, String>> joined = ds.transformToPair(rdd -> rdd.join(jprdd));

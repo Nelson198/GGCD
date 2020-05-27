@@ -41,7 +41,7 @@ public class Top3 {
                                               .mapToPair(l -> new Tuple2<>(l[0], l[3]))
                                               .cache();
 
-        // Initial processing of the "title.ratings.tsv.bz2" file
+        // Streamgen
         JavaPairDStream<String, Float> ds = sc.socketTextStream("streamgen", 12345)
                                               .map(l -> l.split("\t"))
                                               .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Integer.parseInt(l[1]), 1)))

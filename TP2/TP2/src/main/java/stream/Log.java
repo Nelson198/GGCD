@@ -30,7 +30,7 @@ public class Log {
         SparkConf conf = new SparkConf().setAppName("Log");
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
 
-        // Initial processing of the "title.ratings.tsv.bz2" file
+        // Streamgen
         JavaDStream<String> jds = sc.socketTextStream("streamgen", 12345)
                                     .map(l -> {
                                         String[] parts = l.split("\t");
