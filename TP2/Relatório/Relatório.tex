@@ -150,6 +150,7 @@ docker-machine create \
        https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                master
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{master}}
                 \label{fig:1}
             \end{figure}
@@ -167,6 +168,7 @@ docker-machine create \
        https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                worker1
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{worker1}}
                 \label{fig:2}
             \end{figure}
@@ -184,6 +186,7 @@ docker-machine create \
        https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
                worker2
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Criação da instância associada à entidade \textsl{worker2}}
                 \label{fig:3}
             \end{figure}
@@ -197,6 +200,7 @@ docker-machine create \
                 \begin{minted}{bash}
 docker-machine ssh master sudo docker swarm init
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - \textit{swarm} \textsl{master}}
                 \label{fig:4}
             \end{figure}
@@ -208,6 +212,7 @@ docker-machine ssh worker1 sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - \textit{swarm} \textsl{worker1}}
                 \label{fig:5}
             \end{figure}
@@ -219,6 +224,7 @@ docker-machine ssh worker2 sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - \textit{swarm} \textsl{worker2}}
                 \label{fig:6}
             \end{figure}
@@ -230,6 +236,7 @@ docker-machine ssh worker2 sudo docker swarm join --token \
 docker-machine env master
 eval $(docker-machine env master)
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Ativação do ambiente da entidade \textsl{master}}
                 \label{fig:7}
             \end{figure}
@@ -240,6 +247,7 @@ eval $(docker-machine env master)
                 \begin{minted}{bash}
 docker node ls
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Verificação da existência das 3 entidades do sistema}
                 \label{fig:8}
             \end{figure}
@@ -250,6 +258,7 @@ docker node ls
                 \begin{minted}{bash}
 docker stack deploy -c ../swarm-spark/docker-compose.yml mystack
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Arranque do sistema}
                 \label{fig:9}
             \end{figure}
@@ -274,6 +283,7 @@ streamgen:
       constraints:
         - "node.role==manager"
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Ficheiro \textit{"docker-compose.yml"} - \textit{streamgen}}
                 \label{fig:10}
             \end{figure}
@@ -286,6 +296,7 @@ docker stack ls
 docker service ls
 docker network ls
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}}
                 \label{fig:11}
             \end{figure}
@@ -297,17 +308,28 @@ docker network ls
 docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bde2020/hadoop-base \
        bash
                 \end{minted}
+                \vspace{-5mm}
                 \caption{Configuração - Acesso à plataforma \textit{Hadoop HDFS}}
                 \label{fig:12}
             \end{figure}
         \end{enumerate}}
 
-        Com a concretização dos 7 passos descritos acima fica concluída a configuração associada à ao utensílio \textit{docker swarm}.
+        Com a concretização dos 7 passos descritos acima fica concluída a configuração associada ao utensílio \textit{docker swarm}.
 
     \section{1ª Tarefa} \label{sec:Task1}
+        Na 1ª tarefa deste projeto é pedido o desenvolvimento de uma componente de processamento de \textit{streams}. Nesta é solicitada a realização de vários exercícios com diferentes caraterísticas. Como tal, apresenta-se de seguida as respetivas implementações e, ainda, possíveis alternativas nas suas concretizações.
 
         \subsection{\textit{Log}} \label{subsec:Task1-Log}
-            \subsubsection{Alternativa} \label{sssec:Task1-Log-Alternativa}
+        Neste exercício, tal como foi indicado anteriormente neste \hyperref[ch:Implementation]{capítulo}, é imposto o armazenamento de todos os votos individuais recebidos com a indicação da hora de chegada aproximada ao minuto, em lotes de 10 minutos, sendo que cada lote é guardado com o nome relativo ao período de tempo em causa.
+
+        Dito isto, para proceder ao tratamento da aproximação da hora recebida ao minuto, foi implementada uma função para o efeito. O grupo optou por não só guardar a hora referida como também a data em questão, exibindo, desta forma, um maior detalhe da informação recebida.
+        Uma vez implementada esta função, seguindo a sugestão fornecida pelo docente desta unidade curricular, foi utilizado o método \textit{transform} que faz uso da noção de tempo. Com esta vertente, é possível associar a cada \textit{rdd} do conjunto de dados o tempo exato em que este foi processado.
+
+        Por fim, com os aspetos computacionais mencionados acima, resta armazenar os dados recebidos pela ferramenta \textit{streamgen} com recurso à definição de uma janela que respeite o enunciado deste exercício, isto é, 10 minutos de duração e 10 minutos de deslocamento.
+        Os \textit{rdd's} em causa são guardados na diretoria \texttt{Log/Lot\{\textit{i}\} - dd-MM-yyyy HH-mm}, sendo que \texttt{i} diz respeito ao número do lote (que começa no número 1 e que é constamente incrementado) e \texttt{dd-MM-yyyy HH-mm} refere-se ao padrão do período temporal.
+        De maneira a coletar num só ficheiro (\textit{part-00000}) todos os \textit{rdd's} referentes a este exercício, foi aplicado o método \textit{coalesce(1)}.
+        Esta última função, quando comparada com a \textit{repartition()}, não necessita de efetuar um \textit{shuffle} completo dos dados e, para além disso, é mais otimizada para a redução do número de partições.
+        Para além disto, esta abordagem foi considerada nesta implementação dado que no exercício \textit{Ratings} (\textit{batch}) será necessário realizar a leitura do ficheiro mencionado. Consequentemente, em vez de operar várias leituras de ficheiros associados a \textit{rdd's}, efetua-se apenas uma leitura, permitindo, assim, uma maior eficiência.
 
         \subsection{\textit{Top3}} \label{subsec:Task1-Top3}
             \subsubsection{Alternativa} \label{sssec:Task1-Top3-Alternativa} 
