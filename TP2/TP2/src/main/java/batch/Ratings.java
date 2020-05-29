@@ -140,8 +140,8 @@ public class Ratings {
         SparkConf conf = new SparkConf().setAppName("Ratings");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        // Initial processing of the "title.ratings.tsv.bz2" file
-        JavaPairRDD<String, Tuple2<Float, Integer>> jprdd1 = sc.textFile("hdfs://namenode:9000/data/title.ratings.tsv.bz2")
+        // Initial processing of the "title.ratings.tsv" file
+        JavaPairRDD<String, Tuple2<Float, Integer>> jprdd1 = sc.textFile("hdfs://namenode:9000/data/title.ratings.tsv")
                                                                .map(l -> l.split("\t"))
                                                                .filter(l -> !l[0].equals("tconst") && !l[1].equals("averageRating") && !l[2].equals("numVotes"))
                                                                .mapToPair(l -> new Tuple2<>(l[0], new Tuple2<>(Float.parseFloat(l[1]) * Integer.parseInt(l[2]), Integer.parseInt(l[2]))));

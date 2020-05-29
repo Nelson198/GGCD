@@ -6,6 +6,7 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
@@ -32,23 +33,18 @@ public class Log {
 
         // Streamgen
         JavaDStream<String> jds = sc.socketTextStream("streamgen", 12345)
-                                    .map(l -> {
-                                        String[] parts = l.split("\t");
-                                        return String.join("\t", parts[0], parts[1], format(LocalDateTime.now()));
-                                    })
-                                    .window(Durations.minutes(10), Durations.minutes(1));
+                                    .transform((rdd, time) ->
+                                        rdd.map(l -> {
+                                            String[] parts = l.split("\t");
+                                            return String.join("\t", parts[0], parts[1], format(LocalDateTime.ofEpochSecond(time.milliseconds()/1000, 0, ZoneOffset.UTC)));
+                                        }))
+                                    .window(Durations.minutes(10), Durations.minutes(10));
 
         // Process streaming data
         AtomicInteger i = new AtomicInteger(1);
-        AtomicInteger addedToFile = new AtomicInteger(0);
         jds.foreachRDD(rdd -> {
-            if (addedToFile.incrementAndGet() == 10) {
-                rdd.coalesce(1)
-                   .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.get()) + " - " + format(LocalDateTime.now()));
-
-                addedToFile.set(0);
-                i.incrementAndGet();
-            }
+            rdd.coalesce(1)
+               .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.getAndIncrement()) + " - " + format(LocalDateTime.now()));
         });
 
         // Execute the Spark workflow defined above

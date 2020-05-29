@@ -151,7 +151,7 @@ services:
 
   streamgen:
     image: streamgen
-    command: hdfs:///data/title.ratings.tsv.bz2 120
+    command: hdfs:///data/title.ratings.tsv 120
     env_file:
       - ./hadoop.env
     deploy:

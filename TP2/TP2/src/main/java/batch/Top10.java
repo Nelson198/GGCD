@@ -34,8 +34,8 @@ public class Top10 {
         SparkConf conf = new SparkConf().setAppName("Top10");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        // Initial processing of the "title.principals.tsv.bz2" file
-        List<Tuple2<Integer, String>> top10 = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv.bz2")
+        // Initial processing of the "title.principals.tsv" file
+        List<Tuple2<Integer, String>> top10 = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv")
                                                 .map(l -> l.split("\t"))
                                                 .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
                                                 .mapToPair(l -> new Tuple2<>(l[2], l[0]))
@@ -50,8 +50,8 @@ public class Top10 {
         List<String> top10ActorsIds = new ArrayList<>();
         top10.forEach(t -> top10ActorsIds.add(t._2));
 
-        // Initial processing of the "name.basics.tsv.bz2" file
-        Map<String, String> names = sc.textFile("hdfs://namenode:9000/data/name.basics.tsv.bz2")
+        // Initial processing of the "name.basics.tsv" file
+        Map<String, String> names = sc.textFile("hdfs://namenode:9000/data/name.basics.tsv")
                                       .map(l -> l.split("\t"))
                                       .filter(l -> !l[0].equals("nconst") && !l[1].equals("primaryName") && top10ActorsIds.contains(l[0]))
                                       .mapToPair(l -> new Tuple2<>(l[0], l[1]))

@@ -30,12 +30,12 @@ public class Top3 {
         SparkConf conf = new SparkConf().setAppName("Top3");
 
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
-        sc.checkpoint("checkpoint");
+        sc.checkpoint("hdfs://namenode:9000/checkpoint");
 
         // Receive streaming data from the sources
-        // Initial processing of the "title.basics.tsv.bz2" file
+        // Initial processing of the "title.basics.tsv" file
         JavaPairRDD<String, String> jprdd = sc.sparkContext()
-                                              .textFile("hdfs://namenode:9000/data/title.basics.tsv.bz2")
+                                              .textFile("hdfs://namenode:9000/data/title.basics.tsv")
                                               .map(l -> l.split("\t"))
                                               .filter(l -> !l[0].equals("tconst") && !l[3].equals("originalTitle"))
                                               .mapToPair(l -> new Tuple2<>(l[0], l[3]))
