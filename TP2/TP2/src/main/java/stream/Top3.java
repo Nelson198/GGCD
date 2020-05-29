@@ -18,9 +18,9 @@ public class Top3 {
     /**
      * Tuple2's Comparator
      */
-    public static class MyComparator implements Serializable, Comparator<Tuple2<Float, Tuple2<String, String>>> {
+    public static class MyComparator implements Serializable, Comparator<Tuple2<String, Tuple2<Float, String>>> {
         @Override
-        public int compare(Tuple2<Float, Tuple2<String, String>> t1, Tuple2<Float, Tuple2<String, String>> t2) {
+        public int compare(Tuple2<String, Tuple2<Float, String>> t1, Tuple2<String, Tuple2<Float, String>> t2) {
             return t1._1.compareTo(t2._1);
         }
     }
@@ -28,7 +28,6 @@ public class Top3 {
     public static void main(String[] args) throws InterruptedException {
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setAppName("Top3");
-
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
         sc.checkpoint("hdfs://namenode:9000/checkpoint");
 
@@ -57,11 +56,10 @@ public class Top3 {
         JavaPairDStream<String, Tuple2<Float, String>> joined = ds.transformToPair(rdd -> rdd.join(jprdd));
 
         // Process joined data
-        joined.mapToPair(t -> new Tuple2<>(t._2._1, new Tuple2<>(t._2._2, t._1)))
-              .foreachRDD(rdd -> {
+        joined.foreachRDD(rdd -> {
                   StringBuilder sb = new StringBuilder("\nTop 3 movie titles with the best average rating:\n\n");
-                  for (Tuple2<Float, Tuple2<String, String>> t : rdd.top(3, new MyComparator())) {
-                      sb.append(t._2._1).append("\t(").append(t._2._2).append(", ").append(t._1).append(")").append("\n");
+                  for (Tuple2<String, Tuple2<Float, String>> t : rdd.top(3, new MyComparator())) {
+                      sb.append(t._2._2).append("\t(").append(t._1).append(", ").append(t._2._1).append(")").append("\n");
                   }
                   System.out.println(sb.toString());
               });

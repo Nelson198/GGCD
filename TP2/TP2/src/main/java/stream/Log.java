@@ -36,7 +36,7 @@ public class Log {
                                     .transform((rdd, time) ->
                                         rdd.map(l -> {
                                             String[] parts = l.split("\t");
-                                            return String.join("\t", parts[0], parts[1], format(LocalDateTime.ofEpochSecond(time.milliseconds()/1000, 0, ZoneOffset.UTC)));
+                                            return String.join("\t", parts[0], parts[1], format(LocalDateTime.ofEpochSecond(time.milliseconds() / 1000, 0, ZoneOffset.UTC)));
                                         }))
                                     .window(Durations.minutes(10), Durations.minutes(10));
 
