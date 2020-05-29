@@ -22,7 +22,7 @@ public class Friends {
         SparkConf conf = new SparkConf().setAppName("Friends");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        // Initial processing of the "title.principals.tsv.bz2" file
+        // Initial processing of the "title.principals.tsv" file
         JavaPairRDD<String, String> jprdd = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv")
                                               .map(l -> l.split("\t"))
                                               .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
