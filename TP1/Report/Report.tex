@@ -55,7 +55,7 @@
 	\end{tabular}
 }
 
-\date{\today}
+\date{22 de abril de 2020}
 
 \begin{document}
 
@@ -137,7 +137,7 @@
             \label{fig:2}
 		\end{figure}
 
-		Importa também realçar que sempre que sejam necessários outros dos ficheiros da base de dados do IMDb, os mesmos serão alvo do mesmo tratamento e serão utilizados no mesmo formato, pelas mesmas razões já apresentadas.
+		Importa também realçar que sempre que sejam necessários outros dos ficheiros da base de dados do \textit{IMDb}, os mesmos serão alvo do mesmo tratamento e serão utilizados no mesmo formato, pelas mesmas razões já apresentadas.
 
 		Antes de observar os passos relativos à realização desta tarefa, passos esses que se encontram explicitamente indicados nos próximos subcapítulos, é importante salientar que a execução das soluções elaboradas nas secções \hyperref[subsec:Task1-1]{2.2.1} e \hyperref[subsec:Task1-3]{2.2.3} são efetuadas com recurso a um ficheiro denominado por \textit{Dockerfile}.
 		De forma a entender melhor a configuração do mesmo, revela-se a seguir o seu conteúdo:
@@ -180,7 +180,7 @@
         Apresenta-se de seguida o modelo da tabela \textit{HBase} pretendido para a concretização desta tarefa:
         \begin{figure}[H]
             \centering
-            \includegraphics[width=1.0\textwidth]{Imagens/1ª Tarefa - Tabela Hbase.png}
+            \includegraphics[width=1.0\textwidth]{Images/Task 1 - HBase.png}
             \caption{1ª Tarefa - Modelo da tabela \textit{HBase "movies"}}
             \label{fig:5}
         \end{figure}
@@ -289,7 +289,7 @@
 		
 		\begin{figure}[H]
             \centering
-            \includegraphics[width=0.64\textwidth]{Imagens/1ª Tarefa - Esquema MapReduce.png}
+            \includegraphics[width=0.64\textwidth]{Images/Task 1 - MapReduce.png}
             \caption{1ª Tarefa - Esquema do paradigma \textit{MapReduce}}
             \label{fig:12}
         \end{figure}
@@ -316,7 +316,7 @@
         Apresenta-se de seguida o modelo da tabela \textit{HBase} pretendido para a concretização desta tarefa:
         \begin{figure}[H]
             \centering
-            \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Tabela Hbase.png}
+            \includegraphics[width=1.0\textwidth]{Images/Task 2 - HBase.png}
             \caption{2ª Tarefa - Modelo da tabela \textit{HBase "actors"}}
             \label{fig:13}
         \end{figure}
@@ -415,7 +415,7 @@
 			Nesta fase única, são processadas as linhas do ficheiro \textit{"name.basics.tsv"}, previamente inserido na plataforma \textit{Hadoop HDFS}, escolhendo a informação relevante e inserindo o resultado pretendido na tabela \textit{actors}.
 			\begin{figure}[H]
 				\centering
-				\includegraphics[width=0.8\textwidth]{Imagens/2ª Tarefa - Actor2Details - Esquema MapReduce.png}
+				\includegraphics[width=0.8\textwidth]{Images/Task 2 - Actor2Details - MapReduce.png}
 				\caption{2ª Tarefa - \textit{Actor2Details} - Esquema do paradigma \textit{MapReduce}}
 				\label{fig:18}
 			\end{figure}
@@ -433,7 +433,7 @@
 			Tal como o docente desta disciplina sugeriu durante a realização do guião nº 4, optou-se por utilizar um \textit{sequence file} em detrimento de um simples ficheiro de texto. Esta decisão recai sobretudo no facto deste tipo de ficheiro se encontrar serializado, no formato binário, em pares chave-valor e, para além disso, ser consideravelmente mais rápido na execução de operações de leitura e escrita de dados.
 			\begin{figure}[H]
 				\centering
-				\includegraphics[width=0.9\textwidth]{Imagens/2ª Tarefa - Actor2Movies - 1º Esquema MapReduce.png}
+				\includegraphics[width=0.9\textwidth]{Images/Task 2 - Actor2Movies - (1) MapReduce.png}
 				\caption{2ª Tarefa - \textit{Actor2Movies} - 1º Esquema do paradigma \textit{MapReduce}}
 				\label{fig:19}
 			\end{figure}
@@ -445,7 +445,7 @@
 			Por fim, os dados são inseridos na tabela pretendida.
 			\begin{figure}[H]
 				\centering
-				\includegraphics[width=0.9\textwidth]{Imagens/2ª Tarefa - Actor2Movies - 2º Esquema MapReduce.png}
+				\includegraphics[width=0.9\textwidth]{Images/Task 2 - Actor2Movies - (2) MapReduce.png}
 				\caption{2ª Tarefa - \textit{Actor2Movies} - 2º Esquema do paradigma \textit{MapReduce}}
 				\label{fig:20}
 			\end{figure}
@@ -456,7 +456,7 @@
 		
 		\begin{figure}[H]
             \centering
-            \includegraphics[width=0.55\textwidth]{Imagens/2ª Tarefa - Homepage.png}
+            \includegraphics[width=0.50\textwidth]{Images/Task 2 - Homepage.png}
             \caption{2ª Tarefa - Consulta de dados de um determinado ator na tabela \textit{HBase "actors"}}
             \label{fig:21}
         \end{figure}
@@ -476,9 +476,9 @@
     \par \textit{\url{https://docs.oracle.com/javase/8/docs/api/}}
 	\item \textit{Maven}:
     \par \textit{\url{https://maven.apache.org/}}
-    \item \textit{Hadoop}:
+    \item \textit{Apache Hadoop}:
     \par \textit{\url{https://hadoop.apache.org/}}
-    \item \textit{HBase}:
+    \item \textit{Apache HBase}:
     \par \textit{\url{https://hbase.apache.org/}}
 \end{itemize}
 

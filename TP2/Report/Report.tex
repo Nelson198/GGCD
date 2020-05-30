@@ -85,7 +85,7 @@
 
 \titlepic{
 	\vspace{2cm}
-	\includegraphics[scale=0.065]{Imagens//EEUM_logo.png}
+	\includegraphics[scale=0.065]{Images//EEUM_logo.png}
 }
 
 \begin{document}
@@ -142,7 +142,7 @@
     \section{Configuração} \label{sec:Configuration}
         Nesta secção do relatório são apresentadas as configurações relativas ao arranque do \textit{cluster}, instanciando-se tanto as respetivas entidades (\textsl{master}, \textsl{worker1} e \textsl{worker2}) como as máquinas virtuais pertencentes à plataforma \textit{Google Cloud}, e, ainda, a configuração genérica para a execução individual de cada exercício proposto. 
 
-        \subsection{Arranque do \textit{cluster}}
+        \subsection{Arranque do \textit{cluster}} \label{subsec:Configuration-Cluster}
             A configuração escolhida para a realização deste projeto coincide com a que foi sugerida pelo docente desta unidade curricular, isto é, o \textbf{\textit{docker swarm}}.
             Esta configuração permite não só tirar partido da ferramenta computacional \textit{Google Cloud} como também possibilita o uso de plataformas como o \textit{Hadoop HDFS} e o \textit{Apache Spark}.
             Como seria de esperar, todos os ficheiros de \textit{input} utilizados para atingir os objetivos traçados neste trabalho prático são armazenados no sistema \textit{Hadoop HDFS}.
@@ -341,7 +341,7 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
 
             Com a concretização dos 8 passos descritos acima fica concluída a configuração associada à ferramenta \textit{docker swarm}.
         
-        \subsection{Execução de tarefas}
+        \subsection{Execução de tarefas} \label{subsec:Configuration-Dockerfile}
         Para a execução dos 6 exercícios descritos na \hyperref[ch:Implementation]{secção} relativa à implementação, é disponibilizado um ficheiro com a designação \textit{Dockerfile}.
         Neste é especificado o nome da classe relativa à proposta que se presente executar, procedendo corretamente à sua invocação.
         Como tal, em primeiro lugar é preciso desempenhar a seguinte instrução:
@@ -421,7 +421,7 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Top10.png}
+                \includegraphics[width=1.0\textwidth]{Images/Task 2 - Top10.png}
                 \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Top10}}
                 \label{fig:17}
             \end{figure}
@@ -442,7 +442,7 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=1.0\textwidth]{Imagens/2ª Tarefa - Friends.png}
+                \includegraphics[width=1.0\textwidth]{Images/Task 2 - Friends.png}
                 \caption{2ª Tarefa (\textit{batch}) - Esquema do processamento relativo à subtarefa \textit{Friends}}
                 \label{fig:18}
             \end{figure}
