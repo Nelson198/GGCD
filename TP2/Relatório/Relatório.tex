@@ -273,7 +273,7 @@ mvn package
 docker build -t streamgen .
                     \end{minted}
                     \vspace{-5mm}
-                    \caption{Configuração - Compilação d utensílio \textit{streamgen}}
+                    \caption{Configuração - Compilação do utensílio \textit{streamgen}}
                     \label{fig:9}
                 \end{figure}
 
@@ -339,7 +339,7 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
                 \end{figure}
             \end{enumerate}}
 
-            Com a concretização dos 7 passos descritos acima fica concluída a configuração associada à ferramenta \textit{docker swarm}.
+            Com a concretização dos 8 passos descritos acima fica concluída a configuração associada à ferramenta \textit{docker swarm}.
         
         \subsection{Execução de tarefas}
         Para a execução dos 6 exercícios descritos na \hyperref[ch:Implementation]{secção} relativa à implementação, é disponibilizado um ficheiro com a designação \textit{Dockerfile}.
@@ -404,6 +404,8 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
             \subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
 
     \section{2ª Tarefa} \label{sec:Task2}
+        Na 2ª tarefa deste trabalho prático é proposta a implementação de uma componente de processamento em \textit{batch}. Nesta é solicitada a realização de 3 exercícios com diferentes caraterísticas e, como tal, foram adotapadas abordagens distintas para cada um deles.
+        Divulga-se de seguida as respetivas implementações.
 
         \subsection{\textit{Top10}} \label{subsec:Task2-Top10}
             Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
