@@ -41,9 +41,7 @@ public class Top10 {
                                                 .mapToPair(l -> new Tuple2<>(l[2], l[0]))
                                                 .groupByKey()
                                                 .mapToPair(p -> {
-                                                    Set<String> h = new HashSet<>();
-                                                    p._2.forEach(h::add);
-                                                    return new Tuple2<>(h.size(), p._1);
+                                                    return new Tuple2<>(p._2.size(), p._1);
                                                 })
                                                 .top(10, new MyComparator());
 
