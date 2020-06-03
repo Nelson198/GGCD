@@ -1,6 +1,7 @@
 package batch;
 
 import com.google.common.collect.Iterables;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -39,9 +40,7 @@ public class Top10 {
                                                 .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
                                                 .mapToPair(l -> new Tuple2<>(l[2], l[0]))
                                                 .groupByKey()
-                                                .mapToPair(p -> {
-                                                    return new Tuple2<>(Iterables.size(p._2), p._1);
-                                                })
+                                                .mapToPair(p -> new Tuple2<>(Iterables.size(p._2), p._1))
                                                 .top(10, new MyComparator());
 
         List<String> top10ActorsIds = new ArrayList<>();

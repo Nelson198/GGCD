@@ -177,7 +177,7 @@ docker-machine create \
                --google-disk-type=pd-ssd \
                --google-machine-image \
        https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
-               worker_name
+               workerName
                     \end{minted}
                     \vspace{-5mm}
                     \caption{Configuração - Criação de uma instância \textsl{worker}}
@@ -185,7 +185,7 @@ docker-machine create \
                 \end{figure}
 
                 De salientar que a designação \texttt{ferrous-aleph-271712} corresponde ao identificador do projeto presente na plataforma \textit{Google Cloud} de um dos elementos que compõem este grupo.
-                Assim, esta denominação deve ser substituída pelo nome do projeto do utilizador.
+                Assim, esta denominação deve ser substituída pelo nome do projeto do utilizador. Relativamente à designação \textit{workerName}, esta deve ser subtituída pelos nomes das entidades \textit{worker} referidas no ponto acima (\textsl{worker1} e \textsl{worker2}).
 
                 \item configuração do \textit{swarm} relativo às entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
                 \begin{figure}[H]
@@ -201,7 +201,7 @@ docker-machine ssh master sudo docker swarm init
                 \begin{figure}[H]
                     \centering
                     \begin{minted}{bash}
-docker-machine ssh worker_name sudo docker swarm join --token \
+docker-machine ssh workerName sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
                     \end{minted}
@@ -287,45 +287,45 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
             Com a concretização dos 6 passos descritos acima, fica concluída a configuração do \textit{docker swarm}.
         
         \subsection{Execução de tarefas} \label{subsec:Configuration-Dockerfile}
-        Para a execução dos 3 exercícios descritos na \hyperref[ch:Implementation]{secção} relativa à implementação, é disponibilizado um ficheiro com a designação \textit{Dockerfile}.
-        Neste é especificado o nome da classe relativa à proposta que se presente executar, procedendo corretamente à sua invocação.
-        Como tal, em primeiro lugar é preciso desempenhar a seguinte instrução:
-        \begin{figure}[H]
-            \centering
-            \begin{minted}{bash}
+            Para a execução dos 3 exercícios descritos na \hyperref[ch:Implementation]{secção} relativa à implementação, é disponibilizado um ficheiro com a designação \textit{Dockerfile}.
+            Neste é especificado o nome da classe relativa à proposta que se presente executar, procedendo corretamente à sua invocação.
+            Como tal, em primeiro lugar é preciso desempenhar a seguinte instrução:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}{bash}
 mvn package
-            \end{minted}
-            \vspace{-5mm}
-            \caption{Configuração - Obtenção do ficheiro \textit{jar} do projeto}
-            \label{fig:14}
-        \end{figure}
-        
-        De seguida, invoca-se o \textit{dockerfile} em causa. Expõe-se agora o seu conteúdo:
-        \begin{figure}[H]
-            \centering
-            \begin{minted}{dockerfile}
+                \end{minted}
+                \vspace{-5mm}
+                \caption{Configuração - Obtenção do ficheiro \textit{jar} do projeto}
+                \label{fig:14}
+            \end{figure}
+            
+            De seguida, invoca-se o \textit{dockerfile} em causa. Expõe-se agora o seu conteúdo:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}{dockerfile}
 FROM bde2020/spark-base:2.4.4-hadoop2.7
 COPY target/TP2-1.0-SNAPSHOT.jar /
 ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master", \
             "spark://spark-master:7077", "/TP2-1.0-SNAPSHOT.jar"]
-            \end{minted}
-            \vspace{-5mm}
-            \caption{Configuração - \textit{Dockerfile}}
-            \label{fig:15}
-        \end{figure}
+                \end{minted}
+                \vspace{-5mm}
+                \caption{Configuração - \textit{Dockerfile}}
+                \label{fig:15}
+            \end{figure}
 
-        A este ficheiro estão associadas alguma opções de execução que garantem uma comunicação fidedigna com o sistema inicialmente declarado. Eis as mesmas:
-        \begin{figure}[H]
-            \centering
-            \begin{minted}{bash}
+            A este ficheiro estão associadas alguma opções de execução que garantem uma comunicação fidedigna com o sistema inicialmente declarado. Eis as mesmas:
+            \begin{figure}[H]
+                \centering
+                \begin{minted}{bash}
 -p 4040:4040 --network mystack_default --env-file ../swarm-spark/hadoop.env
-            \end{minted}
-            \vspace{-5mm}
-            \caption{Configuração - Opções de execução do ficheiro \textit{Dockerfile}}
-            \label{fig:16}
-        \end{figure}
+                \end{minted}
+                \vspace{-5mm}
+                \caption{Configuração - Opções de execução do ficheiro \textit{Dockerfile}}
+                \label{fig:16}
+            \end{figure}
 
-        De salientar que é escolhida a opção \textsl{master} no campo relativo ao \textit{docker machine} para, mais uma vez, garantir uma configuração válida do sistema em causa.
+            De salientar que é escolhida a opção \textsl{master} no campo relativo ao \textit{docker machine} para, mais uma vez, garantir uma configuração válida do sistema em causa.
 
     \section{1ª Tarefa} \label{sec:Task1}
         Na 1ª tarefa deste projeto é pedido o desenvolvimento de uma componente de processamento de \textit{streams}. Nesta é solicitada a realização de vários exercícios com diferentes caraterísticas. Como tal, apresenta-se de seguida as respetivas implementações e, ainda, possíveis alternativas nas suas concretizações.
@@ -350,18 +350,18 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
             De forma a recolher e tratar os novos votos gerados pelo \textit{streamgen}, mapeia-se cada um dos mesmos para um par em que a chave é o identificador do filme e o valor um outro par: o voto e o número 1.
             
             Desta forma, é possível, depois, utilizar o método \textit{reduceByKeyAndWindow}, de forma a que, para a duração (10) e deslizamento (1) definidos para a janela, seja possível realizar as operações necessárias.
-            Com o método anterior, é possível definir duas funções para aplicar aquando do deslizamento da janela, agrupando previamente os dados pela sua chave (id do filme): a primeira diz respeito ao que fazer com os novos dados que chegam (novos votos) e a segunda diz respeito ao que fazer com os dados que deixam de ficar dentro da duração da janela (votos de há mais de dez minutos).
+            Com o método anterior, é possível definir duas funções para aplicar aquando do deslizamento da janela, agrupando previamente os dados pela sua chave (identificador do filme): a primeira diz respeito ao que fazer com os novos dados que chegam (novos votos) e a segunda diz respeito ao que fazer com os dados que deixam de ficar dentro da duração da janela (votos de há mais de dez minutos).
             
             Dito isto, a primeira função deve somar ambos os componentes do par gerado (voto, 1), por forma a obter um novo par com a soma total dos votos e o número total de votos, para cada filme.
             A segunda função deverá subtrair os mesmos, de forma a que o votos gerados há mais de dez minutos deixem de ter influência nos resultados.
             
-            Por fim, mapeiam-se os resultados para um par em que a chave se mantém o identificador do filme e o valor passa a ser a divisão entre os componentes do par que representava o valor anteriormente.
+            Por fim, mapeiam-se os resultados para um par em que a chave mantém o identificador do filme e o valor passa a ser a divisão entre os componentes do par que representava o valor anteriormente.
             Assim, o novo par associará a classificação média dos últimos dez minutos ao identificador do filme.
 
-            Os últimos passos serão juntar os resultados da computação anterior com uma primeira computação que extrai os títulos dos filmes do ficheiro "\textit{title.basics.tsv}" e os associa ao seu identificador e, por fim, imprimir os resultados.
+            Os últimos passos serão juntar os resultados da computação anterior com uma primeira computação que extrai os títulos dos filmes do ficheiro "\textit{title.basics.tsv}" \hspace{0.1mm} e os associa ao seu identificador. Por fim, são exibidos os resultados obtidos.
             A junção implica o uso do método \textit{transformToPair} de forma a que se proceda à junção de cada \textit{RDD}, resultante do processamento de \textit{stream} explicado acima, ao \textit{JavaPairRDD} explicado anteriormente.
 
-            Ao resultado desta junção aplica-se o método \textit{forEachRDD} e calcula-se, com método \textit{top}, os 3 filmes com melhor classificação média. 
+            Ao resultado desta junção aplica-se o método \textit{forEachRDD} e calcula-se, com o método \textit{top}, os 3 filmes com melhor classificação média.
             Para isso foi necessário explicitar um novo comparador, uma vez que o tipo de dados \textit{Tuple2} não é serializável.
             Por fim, imprime-se o resultado. Esta impressão deve ocorrer uma vez a cada minuto.
 
@@ -369,21 +369,21 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
             O último exercício da primeira tarefa foi talvez o mais desafiante de todos, pelo facto de ser necessário comparar os novos dados com dados anteriores.
             Para resolver o problema, foi decisivo o uso do método \textit{mapWithState}.
 
-            Começou-se da forma mais simples, retirando-se as informações pertinentes do ficheiro "\textit{title.basics.tsv}", para mais tarde serem usadas.
+            Começou-se da forma mais simples, retirando-se as informações pertinentes do ficheiro "\textsl{title.basics.tsv}", para mais tarde serem usadas.
 
             Passando ao processamento de \textit{stream}, este, inicialmente, foi muito semelhante ao do exercício anterior, sendo que, em vez de um par associado ao identificador do filme, foi apenas associado o inteiro 1.
             Desta forma, cada voto terá o mesmo peso, como é exigido, já que se querem comparar números de votos e não classificações.
             O método \textit{reduceByKeyAndWindow} foi aplicado da mesma forma que no exercício anterior, com a alteração dos valores de duração e deslizamento da janela, agora 15 em ambos os casos.
 
             A diferença marca-se depois, com o \textit{output} gerado anteriormente a alimentar o método \textit{mapWithState}, por forma a ser possível comparar os dados (votos) dos últimos 15 minutos com os gerados nos 15 minutos anteriores a estes.
-            Neste último método, opera-se sobre um três variáveis: a chave - \texttt{k} -, o novo valor - \texttt{v} - (pode existir ou não), o estado anterior - \texttt{s} - (pode existir ou não; representa a quantidade de votos dos 15 minutos anteriores aos em questão). 
+            Neste último método, opera-se sobre um três variáveis: a chave \texttt{k}, o novo valor \texttt{v} (pode existir ou não) e o estado anterior \texttt{s} (pode existir ou não; representa a quantidade de votos dos 15 minutos anteriores aos em questão). 
             É declarada uma variável booleana \texttt{trending}. Se \texttt{v} não existir, \texttt{trending} passa a \textit{false} e o estado \texttt{s} é apagado. 
             Se \texttt{v} existir mas \texttt{s} não existir, então \texttt{trending} passa a \textit{true} e \texttt{s} assume o valor de \texttt{v}.
             Caso existam as duas variáveis, então as mesmas são comparadas e \texttt{trending} fica com o resultado dessa comparação (\texttt{v} > \texttt{s}). 
             Independentemente do resultado desta última comparação, \texttt{s} assume o valor de \texttt{v}.
             Por fim, é retornado um par que associa \texttt{trending} à chave \texttt{k}.
 
-            De forma a simplificar a junção desta informação com a retirada do ficheiro "\textit{title.basics.tsv}", é ainda executado o método \textit{mapToPair}, de forma a que o resultado de toda esta computação seja um \textit{JavaPairDStream}.
+            De forma a simplificar a junção desta informação com a retirada do ficheiro "\textsl{title.basics.tsv}", é ainda executado o método \textit{mapToPair}, de forma a que o resultado de toda esta computação seja um \textit{JavaPairDStream}.
 
             Posteriormente, segue-se à junção das informações. Para isto, procede-se da mesma forma que no exercício anterior, sendo que ainda se aplica uma filtragem aos \textit{RDD}'s que tenham os valores de \texttt{trending} a falso.
             Assim, teremos apenas os filmes que estão \textit{trending}, ou seja, que tiveram mais votos no último período de 15 minutos, quando comparados com o período anterior.
@@ -444,11 +444,11 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
             \end{figure}
 
         \subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
-            Este último exercício da segunda tarefa divide-se em três fases, tratar os votos, aplicar as alterações provocadas pelos mesmos e, por fim, atualizar o ficheiro "\textit{title.ratings.tsv}".
+            Este último exercício da segunda tarefa divide-se em três fases, tratar os votos, aplicar as alterações provocadas pelos mesmos e, por fim, atualizar o ficheiro "\textsl{title.ratings.tsv}".
 
             Assim, foram desenvolvidas duas funções auxiliares: 
             a primeira trata de coletar os votos apresentados nos ficheiros de \textit{Log} produzidos pelo primeiro exercício da primeira tarefa, passando-os para um novo ficheiro de texto; 
-            a segunda atualiza o ficheiro "\textit{title.ratings.tsv}", gerando um novo, "\textit{title.ratings.tsv.new}".
+            a segunda atualiza o ficheiro "\textsl{title.ratings.tsv}", gerando um novo, "\textsl{title.ratings.tsv.new}".
 
             A função principal começa por a primeira das funções descritas anteriormente.
 
@@ -463,14 +463,14 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
             De forma a cruzar as informações dos novos votos com as médias já existentes, é realizado um \textit{left outer join}.
             Desta operação obtemos, associado ao identificador de um filme, os valores extraídos na primeira fase e os valores extraídos na segunda, caso existam.
-            De seguida, somam-se os valores da soma total dos votos e do número total de votos, obtendo-se um par com os novos totais associado ao id do filme correspondente.
+            De seguida, somam-se os valores da soma total dos votos e do número total de votos, obtendo-se um par com os novos totais associado ao identificador do filme correspondente.
             De realçar que, para os filmes que não tiveram novos votos, não é feita esta operação, manténdo-se os valores iniciais.
 
             Por fim, é dividida a soma total dos votos pelo número total de votos, de forma a obter-se a nova classificação média, sendo que se preserva o número total de votos.
             É ainda aplicado o método \textit{map}, no sentido de cada par ser convertido numa \textit{string} que irá ser uma linha do novo ficheiro.
 
             A última etapa passa por guardar todas as alterações, pelo que é chamada a segunda das funções descritas acima.
-            Esta função trata de criar um novo ficheiro, "\textit{title.ratings.tsv.new}", onde guarda todos os filmes e respetivos classificações e número de votos, mantendo o formato do ficheiro anterior.
+            Esta função trata de criar um novo ficheiro, "\textsl{title.ratings.tsv.new}", onde guarda todos os filmes e respetivos classificações e número de votos, mantendo o formato do ficheiro anterior.
 
 
     \section{3ª Tarefa} \label{sec:Task3}
