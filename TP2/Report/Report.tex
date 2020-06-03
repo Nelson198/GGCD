@@ -109,13 +109,11 @@
         \textit{\url{https://www.imdb.com/interfaces/}}
     \end{center}
 
-    Para além destes dados, é também utilizado um gerador de \textit{streams}, baseado nos mesmos, que simula uma sequência de votos individuais de utilizadores. Este utensílio foi desenvolvido pelo docente desta unidade curricular e encontra-se disponível na plataforma \textit{Blackboard}.
+    Para além destes dados, é também utilizado um gerador de \textit{streams}, baseado nos mesmos, que simula uma sequência de votos individuais de utilizadores. Este utensílio foi desenvolvido pelo docente desta unidade curricular e foi-nos disponibilizado através da plataforma \textit{Blackboard}.
 
     Ao longo deste documento vão também ser expostos todos os passos tomados durante a implementação das tarefas pedidas neste projeto, incluindo as decisões tomadas pelos elementos deste grupo a nível de algoritmos e parâmetros de configuração.
     Para além disso são ainda apresentadas todas as instruções que permitem executar e utilizar corretamente os programas desenvolvidos.
     Por fim, na fase final deste manuscrito, são exibidos os objetivos atingidos após a realização das tarefas propostas.
-
-    De salientar também que durante os capítulos que se seguem são identificadas algumas alternativas para concretizar as tarefas indicadas neste trabalho prático.	
 }
 
 \chapter{Implementação} \label{ch:Implementation}
@@ -137,7 +135,7 @@
         \item Escolher a configuração e a implementação que, para o mesmo \textit{hardware}, permite receber e tratar o maior débito de eventos. Esta tomada de decisão deve ser devidamente justificada com recurso a resultados experimentais.
     \end{enumerate}
     
-    Nas próximas secções são evidenciadas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
+    Nas próximas secções são expostas as implementações para cada uma destas tarefas bem como algumas sugestões alternativas que poderiam ser tomadas em consideração.
 
     \section{Configuração} \label{sec:Configuration}
         Nesta secção do relatório são apresentadas as configurações relativas ao arranque do \textit{cluster}, instanciando-se tanto as respetivas entidades (\textsl{master}, \textsl{worker1} e \textsl{worker2}) como as máquinas virtuais pertencentes à plataforma \textit{Google Cloud}, e, ainda, a configuração genérica para a execução individual de cada exercício proposto. 
@@ -179,33 +177,15 @@ docker-machine create \
                --google-disk-type=pd-ssd \
                --google-machine-image \
        https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
-               worker1
+               worker_name
                     \end{minted}
                     \vspace{-5mm}
-                    \caption{Configuração - Criação da instância associada à entidade \textsl{worker1}}
+                    \caption{Configuração - Criação de uma instância \textsl{worker}}
                     \label{fig:2}
                 \end{figure}
 
-                \begin{figure}[H]
-                    \centering
-                    \begin{minted}{bash}
-docker-machine create \
-               --driver google --google-project ferrous-aleph-271712 \
-               --google-zone europe-west1-b \
-               --google-machine-type n1-standard-2 \
-               --google-disk-size=100 \
-               --google-disk-type=pd-ssd \
-               --google-machine-image \
-       https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
-               worker2
-                    \end{minted}
-                    \vspace{-5mm}
-                    \caption{Configuração - Criação da instância associada à entidade \textsl{worker2}}
-                    \label{fig:3}
-                \end{figure}
-
                 De salientar que a designação \texttt{ferrous-aleph-271712} corresponde ao identificador do projeto presente na plataforma \textit{Google Cloud} de um dos elementos que compõem este grupo.
-                Assim, esta denominação deve ser substituída pelo nome do projeto do utilizador em causa.
+                Assim, esta denominação deve ser substituída pelo nome do projeto do utilizador.
 
                 \item configuração do \textit{swarm} relativo às entidades \textsl{master}, \textsl{worker1} e \textsl{worker2}:
                 \begin{figure}[H]
@@ -221,25 +201,13 @@ docker-machine ssh master sudo docker swarm init
                 \begin{figure}[H]
                     \centering
                     \begin{minted}{bash}
-docker-machine ssh worker1 sudo docker swarm join --token \
+docker-machine ssh worker_name sudo docker swarm join --token \
                SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
                10.132.0.8:2377
                     \end{minted}
                     \vspace{-5mm}
-                    \caption{Configuração - \textit{swarm} \textsl{worker1}}
+                    \caption{Configuração - \textit{swarm} \textsl{worker}}
                     \label{fig:5}
-                \end{figure}
-
-                \begin{figure}[H]
-                    \centering
-                    \begin{minted}{bash}
-docker-machine ssh worker2 sudo docker swarm join --token \
-               SWMTKN-1-5zfy2iio54tma997pnt96gq5095fimqn2hxr2a8j16ogq0n3c9-0kp6mi5iuj956gpl9sfccd5bo\
-               10.132.0.8:2377
-                    \end{minted}
-                    \vspace{-5mm}
-                    \caption{Configuração - \textit{swarm} \textsl{worker2}}
-                    \label{fig:6}
                 \end{figure}
 
                 \item ativação do ambiente da entidade \textsl{master}:
@@ -252,17 +220,6 @@ eval $(docker-machine env master)
                     \vspace{-5mm}
                     \caption{Configuração - Ativação do ambiente da entidade \textsl{master}}
                     \label{fig:7}
-                \end{figure}
-
-                \item verificação da existência das 3 entidades presentes no sistema e das respetivas propriedades:
-                \begin{figure}[H]
-                    \centering
-                    \begin{minted}{bash}
-docker node ls
-                    \end{minted}
-                    \vspace{-5mm}
-                    \caption{Configuração - Verificação da existência das 3 entidades do sistema}
-                    \label{fig:8}
                 \end{figure}
 
                 \item compilação do gerador de \textit{streams}, isto é, o \textit{streamgen}:
@@ -313,18 +270,6 @@ streamgen:
                     \label{fig:11}
                 \end{figure}
 
-                \item verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}:
-                \begin{figure}[H]
-                    \centering
-                    \begin{minted}{bash}
-docker stack ls
-docker service ls
-docker network ls
-                    \end{minted}
-                    \vspace{-5mm}
-                    \caption{Configuração - Verificação da disponibilidade do serviço relativo à rede \textit{mystack\_default}}
-                    \label{fig:12}
-                \end{figure}
 
                 \item acesso à plataforma \textit{Hadoop HDFS} por parte do utilizador:
                 \begin{figure}[H]
@@ -339,7 +284,7 @@ docker run --network mystack_default --env-file ../swarm-spark/hadoop.env -it bd
                 \end{figure}
             \end{enumerate}}
 
-            Com a concretização dos 8 passos descritos acima fica concluída a configuração associada à ferramenta \textit{docker swarm}.
+            Com a concretização dos 6 passos descritos acima, fica concluída a configuração do \textit{docker swarm}.
         
         \subsection{Execução de tarefas} \label{subsec:Configuration-Dockerfile}
         Para a execução dos 3 exercícios descritos na \hyperref[ch:Implementation]{secção} relativa à implementação, é disponibilizado um ficheiro com a designação \textit{Dockerfile}.
@@ -386,38 +331,85 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
         Na 1ª tarefa deste projeto é pedido o desenvolvimento de uma componente de processamento de \textit{streams}. Nesta é solicitada a realização de vários exercícios com diferentes caraterísticas. Como tal, apresenta-se de seguida as respetivas implementações e, ainda, possíveis alternativas nas suas concretizações.
 
         \subsection{\textit{Log}} \label{subsec:Task1-Log}
-        Neste exercício, tal como foi indicado anteriormente neste \hyperref[ch:Implementation]{capítulo}, é imposto o armazenamento de todos os votos individuais recebidos com a indicação da hora de chegada aproximada ao minuto, em lotes de 10 minutos, sendo que cada lote é guardado com o nome relativo ao período de tempo em causa.
+            Neste exercício, tal como foi indicado no início deste \hyperref[ch:Implementation]{capítulo}, é imposto o armazenamento de todos os votos individuais recebidos com a indicação da hora de chegada aproximada ao minuto, em lotes de 10 minutos, sendo que cada lote é guardado com o nome relativo ao período de tempo em causa.
 
-        Dito isto, para proceder ao tratamento da aproximação da hora recebida ao minuto, foi implementada uma função para o efeito. O grupo optou por não só guardar a hora referida como também a data em questão, exibindo, desta forma, um maior detalhe da informação recebida.
-        Uma vez implementada esta função, seguindo a sugestão fornecida pelo docente desta unidade curricular, foi utilizado o método \textit{transform} que faz uso da noção de tempo. Com esta vertente, é possível associar a cada \textit{rdd} do conjunto de dados o tempo exato em que este foi processado.
+            Dito isto, para proceder ao tratamento da aproximação da hora recebida ao minuto, foi implementada uma função para o efeito. Optou-se por não só guardar a hora referida como também a data em questão, exibindo, desta forma, um maior detalhe da informação recebida.
+            Uma vez implementada esta função, foi utilizado o método \textit{transform} que faz uso da noção de tempo. Com esta vertente, é possível associar a cada \textit{RDD} do conjunto de dados a hora, aproximada ao minuto, em que este foi processado.
 
-        Por fim, com os aspetos computacionais mencionados acima, resta armazenar os dados recebidos pela ferramenta \textit{streamgen} com recurso à definição de uma janela que respeite o enunciado deste exercício, isto é, 10 minutos de duração e 10 minutos de deslocamento.
-        Os \textit{rdd's} em causa são guardados na diretoria \texttt{Log/Lot\{\textit{i}\} - dd-MM-yyyy HH-mm}, sendo que \texttt{i} diz respeito ao número do lote (que começa no número 1 e que é constamente incrementado) e \texttt{dd-MM-yyyy HH-mm} refere-se ao padrão do período temporal.
-        De maneira a coletar num só ficheiro (\textit{part-00000}) todos os \textit{rdd's} referentes a este exercício, foi aplicado o método \textit{coalesce(1)}.
-        Esta última função, quando comparada com a \textit{repartition()}, não necessita de efetuar um \textit{shuffle} completo dos dados e, para além disso, é mais otimizada para a redução do número de partições.
-        Para além disto, esta abordagem foi considerada nesta implementação dado que no exercício \textit{Ratings} (\textit{batch}) será necessário realizar a leitura do ficheiro mencionado. Consequentemente, em vez de operar várias leituras de ficheiros associados a \textit{rdd's}, efetua-se apenas uma leitura, permitindo, assim, uma maior eficiência.
+            Por fim, com os aspetos computacionais mencionados acima, resta armazenar os dados recebidos pela ferramenta \textit{streamgen} com recurso à definição de uma janela com 10 minutos de duração e 10 minutos de deslocamento.
+            Os \textit{RDD}'s em causa são guardados na diretoria \texttt{Log/Lot\{\textit{i}\} - dd-MM-yyyy HH-mm}, sendo que \texttt{i} diz respeito ao número do lote (que começa no número 1 e que é constamente incrementado) e \texttt{dd-MM-yyyy HH-mm} refere-se ao padrão do período temporal.
+            
+            De maneira a guardar apenas um ficheiro (\textit{part-00000}), a todos os \textit{RDD}'s resultantes foi aplicado o método \textit{coalesce(1)}.
+            Esta última função, quando comparada com a \textit{repartition()}, não necessita de efetuar um \textit{shuffle} completo dos dados.
+            Para além disto, esta abordagem foi considerada nesta implementação dado que no exercício \textit{Ratings} (\textit{batch}) será necessário realizar a leitura do ficheiro mencionado. 
+            Consequentemente, em vez de operar várias leituras de ficheiros, efetua-se apenas uma leitura, permitindo, assim, uma maior eficiência.
 
         \subsection{\textit{Top3}} \label{subsec:Task1-Top3}
-            \subsubsection{Alternativa} \label{sssec:Task1-Top3-Alternativa} 
+            Para este exercício é necessário recolher os novos votos e calcular as classificações médias dos últimos dez minutos, a cada minuto.
+
+            De forma a recolher e tratar os novos votos gerados pelo \textit{streamgen}, mapeia-se cada um dos mesmos para um par em que a chave é o identificador do filme e o valor um outro par: o voto e o número 1.
+            
+            Desta forma, é possível, depois, utilizar o método \textit{reduceByKeyAndWindow}, de forma a que, para a duração (10) e deslizamento (1) definidos para a janela, seja possível realizar as operações necessárias.
+            Com o método anterior, é possível definir duas funções para aplicar aquando do deslizamento da janela, agrupando previamente os dados pela sua chave (id do filme): a primeira diz respeito ao que fazer com os novos dados que chegam (novos votos) e a segunda diz respeito ao que fazer com os dados que deixam de ficar dentro da duração da janela (votos de há mais de dez minutos).
+            
+            Dito isto, a primeira função deve somar ambos os componentes do par gerado (voto, 1), por forma a obter um novo par com a soma total dos votos e o número total de votos, para cada filme.
+            A segunda função deverá subtrair os mesmos, de forma a que o votos gerados há mais de dez minutos deixem de ter influência nos resultados.
+            
+            Por fim, mapeiam-se os resultados para um par em que a chave se mantém o identificador do filme e o valor passa a ser a divisão entre os componentes do par que representava o valor anteriormente.
+            Assim, o novo par associará a classificação média dos últimos dez minutos ao identificador do filme.
+
+            Os últimos passos serão juntar os resultados da computação anterior com uma primeira computação que extrai os títulos dos filmes do ficheiro "\textit{title.basics.tsv}" e os associa ao seu identificador e, por fim, imprimir os resultados.
+            A junção implica o uso do método \textit{transformToPair} de forma a que se proceda à junção de cada \textit{RDD}, resultante do processamento de \textit{stream} explicado acima, ao \textit{JavaPairRDD} explicado anteriormente.
+
+            Ao resultado desta junção aplica-se o método \textit{forEachRDD} e calcula-se, com método \textit{top}, os 3 filmes com melhor classificação média. 
+            Para isso foi necessário explicitar um novo comparador, uma vez que o tipo de dados \textit{Tuple2} não é serializável.
+            Por fim, imprime-se o resultado. Esta impressão deve ocorrer uma vez a cada minuto.
 
         \subsection{\textit{Trending}} \label{subsec:Task1-Trending}
-            \subsubsection{Alternativa} \label{sssec:Task1-Trending-Alternativa}
+            O último exercício da primeira tarefa foi talvez o mais desafiante de todos, pelo facto de ser necessário comparar os novos dados com dados anteriores.
+            Para resolver o problema, foi decisivo o uso do método \textit{mapWithState}.
+
+            Começou-se da forma mais simples, retirando-se as informações pertinentes do ficheiro "\textit{title.basics.tsv}", para mais tarde serem usadas.
+
+            Passando ao processamento de \textit{stream}, este, inicialmente, foi muito semelhante ao do exercício anterior, sendo que, em vez de um par associado ao identificador do filme, foi apenas associado o inteiro 1.
+            Desta forma, cada voto terá o mesmo peso, como é exigido, já que se querem comparar números de votos e não classificações.
+            O método \textit{reduceByKeyAndWindow} foi aplicado da mesma forma que no exercício anterior, com a alteração dos valores de duração e deslizamento da janela, agora 15 em ambos os casos.
+
+            A diferença marca-se depois, com o \textit{output} gerado anteriormente a alimentar o método \textit{mapWithState}, por forma a ser possível comparar os dados (votos) dos últimos 15 minutos com os gerados nos 15 minutos anteriores a estes.
+            Neste último método, opera-se sobre um três variáveis: a chave - \texttt{k} -, o novo valor - \texttt{v} - (pode existir ou não), o estado anterior - \texttt{s} - (pode existir ou não; representa a quantidade de votos dos 15 minutos anteriores aos em questão). 
+            É declarada uma variável booleana \texttt{trending}. Se \texttt{v} não existir, \texttt{trending} passa a \textit{false} e o estado \texttt{s} é apagado. 
+            Se \texttt{v} existir mas \texttt{s} não existir, então \texttt{trending} passa a \textit{true} e \texttt{s} assume o valor de \texttt{v}.
+            Caso existam as duas variáveis, então as mesmas são comparadas e \texttt{trending} fica com o resultado dessa comparação (\texttt{v} > \texttt{s}). 
+            Independentemente do resultado desta última comparação, \texttt{s} assume o valor de \texttt{v}.
+            Por fim, é retornado um par que associa \texttt{trending} à chave \texttt{k}.
+
+            De forma a simplificar a junção desta informação com a retirada do ficheiro "\textit{title.basics.tsv}", é ainda executado o método \textit{mapToPair}, de forma a que o resultado de toda esta computação seja um \textit{JavaPairDStream}.
+
+            Posteriormente, segue-se à junção das informações. Para isto, procede-se da mesma forma que no exercício anterior, sendo que ainda se aplica uma filtragem aos \textit{RDD}'s que tenham os valores de \texttt{trending} a falso.
+            Assim, teremos apenas os filmes que estão \textit{trending}, ou seja, que tiveram mais votos no último período de 15 minutos, quando comparados com o período anterior.
+            Por último, antes de imprimir, procede-se ainda ao mapeamento do resultado anterior, de forma a descartar os identificadores dos filmes e os valores booleanos, ficando-se apenas com os nomes dos filmes que estão em alta.
+
+            Resta então apenas a impressão desses nomes. Para isso, aplica-se o método \textit{forEachRDD} ao resultado da execução anterior e aplica-se o método \textit{collect} a cada \textit{RDD}.
+
 
     \section{2ª Tarefa} \label{sec:Task2}
         Na 2ª tarefa deste trabalho prático é proposta a implementação de uma componente de processamento em \textit{batch}. Nesta é solicitada a realização de 3 exercícios com diferentes caraterísticas e, como tal, foram adotapadas abordagens distintas para cada um deles.
-        Divulga-se de seguida as respetivas implementações.
+        Divulgam-se, de seguida, as respetivas implementações.
 
         \subsection{\textit{Top10}} \label{subsec:Task2-Top10}
-            Tal como foi mencionado no início \hyperref[ch:Implementation]{2º capítulo}, nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
+            Nesta subtarefa é pedido o cálculo dos 10 atores que participaram em mais filmes distintos.
+            Ênfase para distintos, uma vez que, no caso das séries, muitos dos episódios apresentam o nome da série, o que poderia levar a um erro na implementação caso estes fossem tomados em conta.
 
             Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
-            Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela segunda componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
-            Uma vez realizada esta computação, obtém-se para cada ator a lista de filmes em que este participou. Atendendo ao resultado exigido neste exercício, basta, nesta etapa do processamento, efetuar a contagem dos filmes associados a cada ator, filtrando os 10 registos com maiores valores.
+            Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela segunda componente. 
+            Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
+            Com esta computação, obtém-se para cada ator a lista de filmes em que este participou.
+            Atendendo ao resultado exigido neste exercício, basta, nesta etapa do processamento, efetuar a contagem dos filmes associados a cada ator.
+            Para tal, mapeia-se o resultado da agregação anterior de forma a associar a cada ator, o número de filmes em que o mesmo participou.
+            Por razões de ordenação e seleção dos atores mais ativos, trocou-se a ordem mencionada acima, sendo que, desta forma, temos o número de filmes como chave e o identificador do ator como valor.
 
-            A recolha dos 10 atores que participaram em mais filmes é formalizada com a chamada do método \textit{top}. Esta função permite extrair os \textit{k} maiores registos de um \textit{RDD} segundo uma determinada ordem.
-            Para o caso deste exercício, houve a necessidade de implementar um comparador explícito, numa classe à parte, dado que o tipo de dados \textit{Tuple2} não é, por definição, serializável.
-
-            Tendo em consideração este último detalhe, conclui-se a realização desta subtarefa.
+            A recolha dos 10 atores que participaram em mais filmes é finalizada com a chamada do método \textit{top}. Esta função permite extrair os \textit{k} maiores registos de um \textit{RDD}, segundo uma determinada ordem.
+            Para este exercício, houve a necessidade de implementar um comparador explícito, numa classe à parte, dado que o tipo de dados \textit{Tuple2} não é, por definição, serializável.
 
             \begin{figure}[H]
                 \centering
@@ -437,8 +429,12 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
                 
             Durante o processamento inicial do ficheiro \textsl{"title.principals.tsv"} é, tal como seria de esperar, ignorado o respetivo cabeçalho.
             Posteriormente, é extraída, linha após linha, a informação pertinente do mesmo, isto é, os identificadores do filme e do ator em questão, agrupando os dados pela primeira componente. Esta última ação é efetuada com recurso à chamada do método \textit{groupByKey}.
-            De forma a obter o resultado solicitado nesta subtarefa, é necessário, nesta fase da computação, proceder à realização de uma operação denominada por produto cartesiano. Nesta operação computa-se, num dado momento, vários pares de atores que coloboraram num determinado filme.
-            Uma vez realizado este cálculo, é invocado novamente o método \textit{groupByKey} de forma a obter o resultado pretendido, isto é, o conjunto de colaboradores para cada ator presente nos dados públicos do \textit{IMDb}.
+
+            De forma a obter o resultado solicitado nesta subtarefa, é necessário, nesta fase da computação, proceder à realização de uma operação denominada por produto cartesiano. 
+            Nesta operação computa-se, num dado momento, todos os pares dos atores que colaboraram num determinado filme, passando a existir apenas pares de atores, com a chave a representar um ator e o valor um dos seus colaboradores.
+            De realçar que estes pares são guardados num \textit{Set}, de forma a eliminar repetições.
+
+            Uma vez realizado este cálculo, é invocado novamente o método \textit{groupByKey} de forma a obter o resultado pretendido, isto é, o conjunto de colaboradores para cada ator.
 
             \begin{figure}[H]
                 \centering
@@ -447,10 +443,35 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
                 \label{fig:18}
             \end{figure}
 
-            \subsubsection{Alternativa} \label{sssec:Task2-Friends-Alternativa}
-
         \subsection{\textit{Ratings}} \label{subsec:Task2-Ratings}
-            \subsubsection{Alternativa} \label{sssec:Task2-Ratings-Alternativa}
+            Este último exercício da segunda tarefa divide-se em três fases, tratar os votos, aplicar as alterações provocadas pelos mesmos e, por fim, atualizar o ficheiro "\textit{title.ratings.tsv}".
+
+            Assim, foram desenvolvidas duas funções auxiliares: 
+            a primeira trata de coletar os votos apresentados nos ficheiros de \textit{Log} produzidos pelo primeiro exercício da primeira tarefa, passando-os para um novo ficheiro de texto; 
+            a segunda atualiza o ficheiro "\textit{title.ratings.tsv}", gerando um novo, "\textit{title.ratings.tsv.new}".
+
+            A função principal começa por a primeira das funções descritas anteriormente.
+
+            De seguida, carrega as informações de \textit{rating} dos filmes, aplicando-lhe a filtragem que permite remover o cabeçalho.
+            A isto, aplica uma alteração, com recurso ao método \textit{mapToPair}, de forma a guardar apenas o identificador do filme associado ao par: multiplicação entre a classificação média obtida até agora e o número total de votos; número total de votos.
+            Esta multiplicação permite obter uma aproximação da soma de todos os votos, útil para calcular a nova classificação média.
+
+            Posto isto, passa-se à fase de carregar os novos votos, por forma a concretizar as alterações necessárias.
+            Utilizando o método \textit{textfile} do \texttt{JavaSparkContext}, é possível ler e manipular o ficheiro de texto gerado pela primeira função auxiliar, como mencionado anteriormente.
+            Assim, carregam-se os novos votos, agrupando os mesmos por identificador do filme. Deste modo, obtém-se, para cada filme, uma lista de todos os novos votos.
+            A este resultado, é aplicada uma última transformação: gera-se um par com a soma de todos os votos e o número total de votos. Este par fica associado ao identificador do filme.
+
+            De forma a cruzar as informações dos novos votos com as médias já existentes, é realizado um \textit{left outer join}.
+            Desta operação obtemos, associado ao identificador de um filme, os valores extraídos na primeira fase e os valores extraídos na segunda, caso existam.
+            De seguida, somam-se os valores da soma total dos votos e do número total de votos, obtendo-se um par com os novos totais associado ao id do filme correspondente.
+            De realçar que, para os filmes que não tiveram novos votos, não é feita esta operação, manténdo-se os valores iniciais.
+
+            Por fim, é dividida a soma total dos votos pelo número total de votos, de forma a obter-se a nova classificação média, sendo que se preserva o número total de votos.
+            É ainda aplicado o método \textit{map}, no sentido de cada par ser convertido numa \textit{string} que irá ser uma linha do novo ficheiro.
+
+            A última etapa passa por guardar todas as alterações, pelo que é chamada a segunda das funções descritas acima.
+            Esta função trata de criar um novo ficheiro, "\textit{title.ratings.tsv.new}", onde guarda todos os filmes e respetivos classificações e número de votos, mantendo o formato do ficheiro anterior.
+
 
     \section{3ª Tarefa} \label{sec:Task3}
 
