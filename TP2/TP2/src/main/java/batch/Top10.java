@@ -1,5 +1,6 @@
 package batch;
 
+import com.google.common.collect.Iterables;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -8,10 +9,8 @@ import scala.Tuple2;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Top10
@@ -41,7 +40,7 @@ public class Top10 {
                                                 .mapToPair(l -> new Tuple2<>(l[2], l[0]))
                                                 .groupByKey()
                                                 .mapToPair(p -> {
-                                                    return new Tuple2<>(p._2.size(), p._1);
+                                                    return new Tuple2<>(Iterables.size(p._2), p._1);
                                                 })
                                                 .top(10, new MyComparator());
 
