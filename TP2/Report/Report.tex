@@ -474,6 +474,22 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
 
     \section{3ª Tarefa} \label{sec:Task3}
+    Para esta tarefa foram realizados alguns testes, com diferentes configurações, de forma a se perceber qual delas permitia o melhor desempenho.
+    Os testes foram efetuados em máquinas com 4 CPUs e 15 GiB de memória.
+
+    Para o caso da primeira tarefa (\textit{stream}) observou-se o uso dos recursos computacionais, sendo que, tanto o uso de CPU como de memória se mantiveram reduzidos.
+    Assim, tudo indica que o uso de apenas 1 CPU e 2 GiB de memória deverão ser suficientes.
+    De realçar que, para este caso, foi testado o exercício Top3.
+
+    Para o caso da segunda tarefa (\textit{batch}), o tempo de execução foi o critério de desempate.
+    Foi testado o exercício Top10, sendo que o aumento de memória não teve efeito no tempo de execução, pelo que um mínimo de 2 GiB de memória deverão ser necessários.
+    Quanto aos CPUs, os resultados já foram distintos. O uso de um maior número de CPUs traduziu-se num melhor desempenho. Portanto, o uso dos 4 CPUs disponíveis é aconselhado.
+    
+    Para além deste exercício testou-se ainda, para a segunda tarefa, o exercício \textit{Friends}. 
+    Neste caso, a memória parece ter impacto no tempo de execução, pelo que se aconselha o uso de, pelo menos, 8 GiB de memória para este exercício.
+
+    Também foi testado o impacto do tamanho dos blocos de memória aquando do carregamento, para o sistema HDFS, dos diferentes ficheiros utilizados.
+    Estes últimos testes indicaram que o tamanho dos blocos de memória não têm grande influência na execução dos algoritmos desenvolvidos.
 
 
 \chapter{Conclusão} \label{ch:Conclusion}
