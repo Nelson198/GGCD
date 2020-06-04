@@ -479,10 +479,10 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
     Para o caso da primeira tarefa (\textit{stream}) observou-se o uso dos recursos computacionais, sendo que, tanto o uso de CPU como de memória se mantiveram reduzidos.
     Assim, tudo indica que o uso de apenas 1 CPU e 2 GiB de memória deverão ser suficientes.
-    De realçar que, para este caso, foi testado o exercício Top3.
+    De realçar que, para este caso, foi testado o exercício \textit{Top3}.
 
     Para o caso da segunda tarefa (\textit{batch}), o tempo de execução foi o critério de desempate.
-    Foi testado o exercício Top10, sendo que o aumento de memória não teve efeito no tempo de execução, pelo que um mínimo de 2 GiB de memória deverão ser necessários.
+    Foi testado o exercício \textit{Top10}, sendo que o aumento de memória não teve efeito no tempo de execução, pelo que um mínimo de 2 GiB de memória deverão ser necessários.
     Quanto aos CPUs, os resultados já foram distintos. O uso de um maior número de CPUs traduziu-se num melhor desempenho. Portanto, o uso dos 4 CPUs disponíveis é aconselhado.
     
     Para além deste exercício testou-se ainda, para a segunda tarefa, o exercício \textit{Friends}. 
@@ -494,7 +494,15 @@ ENTRYPOINT ["/spark/bin/spark-submit", "--class", "package.className", "--master
 
 \chapter{Conclusão} \label{ch:Conclusion}
 \large{
-    
+    Para concluir, neste trabalho tivemos oportunidade de aprofundar os nossos conhecimentos no processamento de dados em grande escala através do uso da \textit{framework} Spark, nas suas vertentes de \textit{batch} e \textit{streaming}.
+
+    Em comparação com o primeiro trabalho prático, esta ferramenta tem diversas vantagens em relação à usada nesse trabalho.
+    Nomeadamente, a maior flexibilidade e rapidez nas operações efetuadas sobre os dados são duas dessas vantagens.
+
+    Para além disto, tivemos a oportunidade de interagir com uma plataforma da \textit{cloud}, mais propriamente a \textit{Google Cloud}, que utilizamos de forma a configurar um sistema com mais do que uma máquina física.
+    Desta forma, foi possível testar e compreender as vantagens de utilizar um sistema deste tipo.
+
+    Por último, podemos afirmar que os objetivos foram atingidos, uma vez que todos os exercícios foram resolvidos com sucesso e, na nossa leitura, eficientemente.
 }
 
 \appendix
