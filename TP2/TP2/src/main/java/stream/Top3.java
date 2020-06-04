@@ -59,12 +59,12 @@ public class Top3 {
 
         // Process joined data
         joined.foreachRDD(rdd -> {
-                  StringBuilder sb = new StringBuilder("\nTop 3 movie titles with the best average rating:\n\n");
-                  for (Tuple2<String, Tuple2<Float, String>> t : rdd.top(3, new MyComparator())) {
-                      sb.append(t._2._2).append("\t(").append(t._1).append(", ").append(t._2._1).append(")").append("\n");
-                  }
-                  System.out.println(sb.toString());
-              });
+            StringBuilder sb = new StringBuilder("\nTop 3 movie titles with the best average rating:\n\n");
+            for (Tuple2<String, Tuple2<Float, String>> t : rdd.top(3, new MyComparator())) {
+                sb.append(t._2._2).append("\t(").append(t._1).append(", ").append(t._2._1).append(")").append("\n");
+            }
+            System.out.println(sb.toString());
+        });
 
         // Execute the Spark workflow defined above
         sc.start();
