@@ -10,7 +10,7 @@
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
-               --google-machine-type n1-standard-2 \
+               --google-machine-type n1-standard-4 \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
@@ -21,7 +21,7 @@ docker-machine create \
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
-               --google-machine-type n1-standard-2 \
+               --google-machine-type n1-standard-4 \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
@@ -32,7 +32,7 @@ docker-machine create \
 docker-machine create \
                --driver google --google-project ferrous-aleph-271712 \
                --google-zone europe-west1-b \
-               --google-machine-type n1-standard-2 \
+               --google-machine-type n1-standard-4 \
                --google-disk-size=100 \
                --google-disk-type=pd-ssd \
                --google-machine-image https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-7-v20200309 \
