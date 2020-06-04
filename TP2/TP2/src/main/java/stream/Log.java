@@ -44,10 +44,8 @@ public class Log {
 
         // Process streaming data
         AtomicInteger i = new AtomicInteger(1);
-        jds.foreachRDD(rdd -> {
-            rdd.coalesce(1)
-               .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.getAndIncrement()) + " - " + format(LocalDateTime.now()));
-        });
+        jds.foreachRDD(rdd -> rdd.coalesce(1)
+                                 .saveAsTextFile("hdfs://namenode:9000/Log/Lot" + (i.getAndIncrement()) + " - " + format(LocalDateTime.now())));
 
         // Execute the Spark workflow defined above
         sc.start();
