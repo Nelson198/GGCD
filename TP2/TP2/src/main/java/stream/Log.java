@@ -27,6 +27,8 @@ public class Log {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        long initialTime = System.currentTimeMillis();
+
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setAppName("Log");
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
@@ -53,5 +55,7 @@ public class Log {
 
         // Close streaming context
         sc.close();
+
+        System.out.println("\nTime: " + (System.currentTimeMillis() - initialTime) + " ms");
     }
 }

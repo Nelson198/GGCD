@@ -17,6 +17,8 @@ import scala.Tuple2;
  */
 public class Trending {
     public static void main(String[] args) throws InterruptedException {
+        long time = System.currentTimeMillis();
+
         // Configure and initialize the JavaStreamingContext
         SparkConf conf = new SparkConf().setAppName("Trending");
         JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.minutes(1));
@@ -78,5 +80,7 @@ public class Trending {
 
         // Close streaming context
         sc.close();
+
+        System.out.println("\nTime: " + (System.currentTimeMillis() - time) + " ms");
     }
 }

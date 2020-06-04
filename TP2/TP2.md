@@ -215,3 +215,16 @@ $ nc localhost 12345
     ```bash
     curl https://datasets.imdbws.com/title.principals.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/title.principals.tsv
     ```
+
+* *"title.basics.tsv.gz"* :
+
+    ```bash
+    curl https://datasets.imdbws.com/title.basics.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/title.basics.tsv
+    ```
+
+* *"name.basics.tsv.gz"* :
+
+    ```bash
+    curl https://datasets.imdbws.com/name.basics.tsv.gz | gunzip | hdfs dfs -put - hdfs://namenode:9000/data/name.basics.tsv
+    ```
+

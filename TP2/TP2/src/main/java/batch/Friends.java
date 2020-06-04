@@ -25,7 +25,7 @@ public class Friends {
         // Initial processing of the "title.principals.tsv" file
         JavaPairRDD<String, String> jprdd = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv")
                                               .map(l -> l.split("\t"))
-                                              .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
+                                              .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst") && (l[3].equals("actor") || l[3].equals("actress")))
                                               .mapToPair(l -> new Tuple2<>(l[0], l[2]));
 
         // Get set of collaborators

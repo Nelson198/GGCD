@@ -37,7 +37,7 @@ public class Top10 {
         // Initial processing of the "title.principals.tsv" file
         List<Tuple2<Integer, String>> top10 = sc.textFile("hdfs://namenode:9000/data/title.principals.tsv")
                                                 .map(l -> l.split("\t"))
-                                                .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst"))
+                                                .filter(l -> !l[0].equals("tconst") && !l[2].equals("nconst") && (l[3].equals("actor") || l[3].equals("actress")))
                                                 .mapToPair(l -> new Tuple2<>(l[2], l[0]))
                                                 .groupByKey()
                                                 .mapToPair(p -> new Tuple2<>(Iterables.size(p._2), p._1))
